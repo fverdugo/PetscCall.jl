@@ -79,7 +79,7 @@ function MatCreateSeqAIJWithArrays_args(csr::SparseMatrixCSR{0,PetscScalar,Petsc
   (MPI.COMM_SELF,m,n,i,j,v)
 end
 
-function ksp_create_handles()
+function ksp_handles()
     ksp = Ref{KSP}()
     mat = Ref{Mat}()
     vec_b = Ref{Vec}()
@@ -87,8 +87,8 @@ function ksp_create_handles()
     (ksp,mat,vec_b,vec_x)
 end
 
-function ksp_destroy_handles!(handlers)
-    (ksp,mat,vec_b,vec_x) = handlers
+function ksp_destroy_handles!(handles)
+    (ksp,mat,vec_b,vec_x) = handles
     @check_error_code KSPDestroy(ksp)
     @check_error_code MatDestroy(mat)
     @check_error_code VecDestroy(vec_b)
@@ -108,11 +108,12 @@ function default_ksp_low_level_postpro(ksp)
     (;niters)
 end
 
-function ksp_setup(x,A,b,handlers;
+function ksp_setup(x,A,b;
+    handles = ksp_handles(),
     low_level_setup = default_ksp_low_level_setup,
     low_level_postpro = default_ksp_low_level_postpro,
     )
-    (ksp,mat,vec_b,vec_x) = handlers
+    (ksp,mat,vec_b,vec_x) = handles
     args_A = MatCreateSeqAIJWithArrays_args(A)
     args_b = VecCreateSeqWithArray_args(copy(b))
     args_x = VecCreateSeqWithArray_args(copy(x))
@@ -126,21 +127,33 @@ function ksp_setup(x,A,b,handlers;
     low_level_setup(ksp)
     @check_error_code KSPSetUp(ksp[])
     ownership = (args_A,args_b,args_x)
-    setup = (handlers,ownership,low_level_postpro)
+    setup = (handles,ownership,low_level_setup,low_level_postpro)
     setup
 end
 
 function ksp_setup!(setup,A)
-    (handlers,ownership,low_level_postpro) = setup
+    # TODO this one can be optimized
+    (handles,ownership,low_level_setup,low_level_postpro) = setup
     (args_A,args_b,args_x) = ownership 
-    (ksp,mat,vec_b,vec_x) = handlers
-    # TODO
+    (ksp,mat,vec_b,vec_x) = handles
+    @check_error_code MatDestroy(mat)
+    args_A = MatCreateSeqAIJWithArrays_args(A)
+    @check_error_code MatCreateSeqAIJWithArrays(args_A...,mat)
+    @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
+    @check_error_code KSPSetOperators(ksp[],mat[],mat[])
+    setup
 end
 
-function ksp_solve!(x,b,setup)
-    (handlers,ownership,low_level_postpro) = setup
+function ksp_destroy_setup!(setup)
+    (handles,ownership,low_level_setup,low_level_postpro) = setup
+    ksp_destroy_handles!(handles)
+end
+
+function ksp_solve!(x,setup,b)
+    (handles,ownership,low_level_setup,low_level_postpro) = setup
     (args_A,args_b,args_x) = ownership 
-    (ksp,mat,vec_b,vec_x) = handlers
+    (ksp,mat,vec_b,vec_x) = handles
     VecCreateSeqWithArray_args!(args_b,b)
     @check_error_code KSPSolve(ksp[],vec_b[],vec_x[])
     VecCreateSeqWithArray_args_reversed!(x,args_x)
