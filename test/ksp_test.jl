@@ -3,6 +3,7 @@ module KSPTests
 using SparseArrays
 using Test
 using PETSC
+using LinearAlgebra
 
 # Create a spare matrix and a vector in Julia
 I = [1,1,2,2,2,3,3,3,4,4]

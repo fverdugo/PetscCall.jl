@@ -5,6 +5,7 @@ using Libdl
 using MPI
 using SparseArrays
 using SparseMatricesCSR
+using PartitionedArrays
 
 include("preferences_head.jl")
 include("api.jl")

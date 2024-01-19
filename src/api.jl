@@ -249,6 +249,7 @@ Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Vec) = v.ptr
 
 @wrapper(:VecCreateSeq,PetscErrorCode,(MPI.Comm,PetscInt,Ptr{Vec}),(comm,n,vec),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecCreateSeq.html")
 @wrapper(:VecCreateSeqWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Ptr{PetscScalar},Ptr{Vec}),(comm,bs,n,array,vec),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecCreateSeqWithArray.html")
+@wrapper(:VecCreateMPIWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscScalar},Ptr{Vec}),(comm,bs,n,N,array,vec),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecCreateMPIWithArray.html")
 @wrapper(:VecCreateGhost,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{Vec}),(comm,n,N,nghost,ghosts,vv),"https://petsc.org/release/docs/manualpages/Vec/VecCreateGhost.html")
 @wrapper(:VecCreateGhostWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscScalar},Ptr{Vec}),(comm,n,N,nghost,ghosts,array,vv),"https://petsc.org/release/docs/manualpages/Vec/VecCreateGhostWithArray.html")
 @wrapper(:VecCreateMPI,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Vec),(comm,n,N,v),"https://petsc.org/release/docs/manualpages/Vec/VecCreateMPI.html")
@@ -511,6 +512,7 @@ Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Mat) = v.ptr
 @wrapper(:MatCreateSeqAIJ,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{Mat}),(comm,m,n,nz,nnz,mat),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateSeqAIJ.html")
 @wrapper(:MatCreateSeqAIJWithArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,i,j,a,mat),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateSeqAIJWithArrays.html")
 @wrapper(:MatCreateMPIAIJWithArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,M,N,i,j,a,mat),"https://petsc.org/release/docs/manualpages/Mat/MatCreateMPIAIJWithArrays.html")
+@wrapper(:MatCreateMPIAIJWithSplitArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,M,N,i,j,a,oi,oj,oa,mat),"https://petsc.org/release/docs/manualpages/Mat/MatCreateMPIAIJWithSplitArrays.html")
 @wrapper(:MatDestroy,PetscErrorCode,(Ptr{Mat},),(A,),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatDestroy.html")
 @wrapper(:MatView,PetscErrorCode,(Mat,PetscViewer),(mat,viewer),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatView.html")
 @wrapper(:MatSetValues,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{PetscScalar},InsertMode),(mat,m,idxm,n,idxn,v,addv),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSetValues.html")

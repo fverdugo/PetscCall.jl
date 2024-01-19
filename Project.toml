@@ -7,12 +7,15 @@ version = "0.1.0"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"
 PETSc_jll = "8fa3689e-f0b9-5420-9873-adf6ccf46f2d"
+PartitionedArrays = "5a9dfac6-5c52-46f7-8278-5e2210713be9"
 Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SparseMatricesCSR = "a0a7dd2c-ebf4-11e9-1f05-cf50bc540ca1"
 
 [compat]
 julia = "1.6"
+MPI = "0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20"
+PETSc_jll = "=3.13.4, =3.15.2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
