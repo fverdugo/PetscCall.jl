@@ -240,14 +240,11 @@ end
 
 ## KSP for PartitionedArrays (MPI back-end)
 
-function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix,petsc_comm)
+function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix,petsc_comm,cols=renumber_partition(partition(axes(a,2))))
     @assert a.assembled
     @assert isa(partition(a),MPIArray)
-    # TODO not asserted assumptions:
-    # Assumes that global ids are ordered and split format
-    rows, cols = axes(a)
-    M = length(rows)
-    N = length(cols)
+    rows = partition(axes(a,1))
+    M,N = size(a)
     function setup(a,rows,cols)
         Tm  = SparseMatrixCSR{0,PetscScalar,PetscInt}
         own_own = convert(Tm,a.blocks.own_own)
@@ -265,7 +262,7 @@ function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix,petsc_comm)
         n = own_length(cols)
         (petsc_comm,m,n,M,N,i,j,v,oi,oj,ov)
     end
-    args = map(setup,partition(a),partition(rows),partition(cols))
+    args = map(setup,partition(a),rows,cols)
     args.item
 end
 

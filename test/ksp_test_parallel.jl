@@ -62,6 +62,36 @@ function ksp_tests(distribute,np)
     @test 2*x ≈ x2
 
     PETSC.ksp_destroy_setup!(setup)
+
+    # Now with an unordered partition
+
+    if np != 1
+        global_to_color = [1,2,3,1,2,3,1]
+        row_partition = partition_from_color(parts,global_to_color)
+        col_partition = row_partition
+
+        A = psparse(I,J,V,row_partition,col_partition) |> fetch
+        renumber_partition(partition(axes(A,2)))
+
+        x = pones(partition(axes(A,2)))
+        b = A*x
+
+        x2 = similar(x); x2 .= 0
+        setup = PETSC.ksp_setup(x2,A,b,petsc_comm)
+        results = PETSC.ksp_solve!(x2,setup,b)
+        @test x ≈ x2
+
+        b = 2*b
+        results = PETSC.ksp_solve!(x2,setup,b)
+        @test 2*x ≈ x2
+
+        PETSC.ksp_setup!(setup,A)
+        results = PETSC.ksp_solve!(x2,setup,b)
+        @test 2*x ≈ x2
+
+        PETSC.ksp_destroy_setup!(setup)
+    end
+
 end
 
 
