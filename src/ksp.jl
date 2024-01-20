@@ -1,16 +1,20 @@
 
-function init(;args=String[],file="",help="",finalize_atexit=true)
+getcomm(ranks::MPIArray) = ranks.comm
+getcomm(ranks) = MPI.COMM_SELF
+
+function init(;comm=MPI.COMM_WORLD,args=String[],file="",help="",finalize_atexit=true)
     if !MPI.Initialized()
         MPI.Init()
     end
     if finalize_atexit
         atexit(finalize)
     end
+    petsc_comm = MPI.Comm_dup(comm)
     finalize()
     new_args = ["PETSC"]
     append!(new_args,args)
     @check_error_code PetscInitializeNoPointers(length(new_args),new_args,file,help)
-    nothing
+    petsc_comm
 end
 
 function initialized()
@@ -39,9 +43,9 @@ function VecCreateSeqWithArray_args(v::AbstractVector)
     VecCreateSeqWithArray_args(w)
 end
 
-function VecCreateSeqWithArray_args(v::Vector{PetscScalar},block_size=1)
+function VecCreateSeqWithArray_args(v::Vector{PetscScalar},comm,block_size=1)
     n = length(v)
-    (MPI.COMM_SELF,block_size,n,v)
+    (comm,block_size,n,v)
 end
 
 function VecCreateSeqWithArray_args!(args,w::AbstractVector)
@@ -60,27 +64,27 @@ function VecCreateSeqWithArray_args_reversed!(w::AbstractVector,args)
     nothing
 end
 
-function MatCreateSeqAIJWithArrays_args(A::AbstractMatrix)
-  m, n = size(A)
-  i = [PetscInt(n*(i-1)) for i=1:m+1]
-  j = [PetscInt(j-1) for i=1:m for j=1:n]
-  v = [ PetscScalar(A[i,j]) for i=1:m for j=1:n]
-  (MPI.COMM_SELF,m,n,i,j,v)
+#function MatCreateSeqAIJWithArrays_args(A::AbstractMatrix,comm)
+#  m, n = size(A)
+#  i = [PetscInt(n*(i-1)) for i=1:m+1]
+#  j = [PetscInt(j-1) for i=1:m for j=1:n]
+#  v = [ PetscScalar(A[i,j]) for i=1:m for j=1:n]
+#  (comm,m,n,i,j,v)
+#end
+
+function MatCreateSeqAIJWithArrays_args(A::SplitMatrix,comm)
+    MatCreateSeqAIJWithArrays_args(A.blocks.own_own,comm)
 end
 
-function MatCreateSeqAIJWithArrays_args(A::SplitMatrix)
-    MatCreateSeqAIJWithArrays_args(A.blocks.own_own)
-end
-
-function MatCreateSeqAIJWithArrays_args(A::AbstractSparseMatrix)
+function MatCreateSeqAIJWithArrays_args(A::AbstractSparseMatrix,comm)
   Tm = SparseMatrixCSR{0,PetscScalar,PetscInt}
   csr = convert(Tm,A)
-  MatCreateSeqAIJWithArrays_args(csr)
+  MatCreateSeqAIJWithArrays_args(csr,comm)
 end
 
-function MatCreateSeqAIJWithArrays_args(csr::SparseMatrixCSR{0,PetscScalar,PetscInt})
+function MatCreateSeqAIJWithArrays_args(csr::SparseMatrixCSR{0,PetscScalar,PetscInt},comm)
   m, n = size(csr); i = csr.rowptr; j = csr.colval; v = csr.nzval
-  (MPI.COMM_SELF,m,n,i,j,v)
+  (comm,m,n,i,j,v)
 end
 
 function ksp_handles()
@@ -114,33 +118,34 @@ end
 
 ## KSP for sequential matrices (default for all matrix types)
 
-mutable struct KspSeqSetup{A,B,C,D}
+mutable struct KspSeqSetup{A,B,C,D,E}
     handles::A
     ownership::B
     low_level_setup::C
     low_level_postpro::D
+    petsc_comm::E
 end
 
-function ksp_setup(x,A,b;
+function ksp_setup(x,A,b,petsc_comm=MPI.COMM_SELF;
     handles = ksp_handles(),
     low_level_setup = default_ksp_low_level_setup,
     low_level_postpro = default_ksp_low_level_postpro,
     )
     (ksp,mat,vec_b,vec_x) = handles
-    args_A = MatCreateSeqAIJWithArrays_args(A)
-    args_b = VecCreateSeqWithArray_args(copy(b))
-    args_x = VecCreateSeqWithArray_args(copy(x))
+    args_A = MatCreateSeqAIJWithArrays_args(A,petsc_comm)
+    args_b = VecCreateSeqWithArray_args(copy(b),petsc_comm)
+    args_x = VecCreateSeqWithArray_args(copy(x),petsc_comm)
     @check_error_code MatCreateSeqAIJWithArrays(args_A...,mat)
     @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
     @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
     @check_error_code VecCreateSeqWithArray(args_b...,vec_b)
     @check_error_code VecCreateSeqWithArray(args_x...,vec_x)
-    @check_error_code KSPCreate(MPI.COMM_SELF,ksp)
+    @check_error_code KSPCreate(petsc_comm,ksp)
     @check_error_code KSPSetOperators(ksp[],mat[],mat[])
     low_level_setup(ksp)
     @check_error_code KSPSetUp(ksp[])
     ownership = (args_A,args_b,args_x)
-    setup = KspSeqSetup(handles,ownership,low_level_setup,low_level_postpro)
+    setup = KspSeqSetup(handles,ownership,low_level_setup,low_level_postpro,petsc_comm)
     setup
 end
 
@@ -155,10 +160,11 @@ function ksp_solve!(x,setup,b)
 end
 
 function ksp_setup!(setup,A)
+    petsc_comm = setup.petsc_comm
     (args_A,args_b,args_x) = setup.ownership 
     (ksp,mat,vec_b,vec_x) = setup.handles
     @check_error_code MatDestroy(mat)
-    args_A = MatCreateSeqAIJWithArrays_args(A)
+    args_A = MatCreateSeqAIJWithArrays_args(A,petsc_comm)
     @check_error_code MatCreateSeqAIJWithArrays(args_A...,mat)
     @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
     @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
@@ -175,8 +181,8 @@ end
 # This one is not efficient. It is simple collecting the
 # arrays in the main process and applying the sequential version
 
-function ksp_setup(x::PVector,A::PSparseMatrix,b::PVector;kwargs...)
-    ksp_setup_parallel_impl(partition(A),x,A,b;kwargs...)
+function ksp_setup(x::PVector,A::PSparseMatrix,b::PVector,petsc_comm;kwargs...)
+    ksp_setup_parallel_impl(partition(A),x,A,b,petsc_comm;kwargs...)
 end
 
 struct KspPartitionedSetup{A,B,C}
@@ -185,9 +191,9 @@ struct KspPartitionedSetup{A,B,C}
     caches::C
 end
 
-function ksp_setup_parallel_impl(::AbstractArray,x,A,b;kwargs...)
+function ksp_setup_parallel_impl(::AbstractArray,x,A,b,petsc_comm;kwargs...)
     function local_setup(args...)
-        ksp_setup(args...;kwargs...)
+        ksp_setup(args...,petsc_comm;kwargs...)
     end
     m,n = size(A)
     ranks = linear_indices(partition(A))
@@ -234,14 +240,12 @@ end
 
 ## KSP for PartitionedArrays (MPI back-end)
 
-function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix)
+function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix,petsc_comm)
     @assert a.assembled
     @assert isa(partition(a),MPIArray)
     # TODO not asserted assumptions:
     # Assumes that global ids are ordered and split format
     rows, cols = axes(a)
-    values = partition(a)
-    comm = values.comm
     M = length(rows)
     N = length(cols)
     function setup(a,rows,cols)
@@ -259,25 +263,23 @@ function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix)
         oj .-= u
         m = own_length(rows)
         n = own_length(cols)
-        (comm,m,n,M,N,i,j,v,oi,oj,ov)
+        (petsc_comm,m,n,M,N,i,j,v,oi,oj,ov)
     end
     args = map(setup,partition(a),partition(rows),partition(cols))
     args.item
 end
 
-function VecCreateMPIWithArray_args(v::PVector,block_size=1)
+function VecCreateMPIWithArray_args(v::PVector,petsc_comm,block_size=1)
     @assert isa(partition(v),MPIArray)
     # TODO not asserted assumptions:
     # Assumes that global ids are ordered and that the vector is assembled
     rows = axes(v,1)
-    values = partition(v)
-    comm = values.comm
     N = length(rows)
     function setup(v_own)
         n = length(v_own)
         T = Vector{PetscScalar}
         array = convert(T,v_own)
-        (comm,block_size,n,N,array)
+        (petsc_comm,block_size,n,N,array)
     end
     args = map(setup,own_values(v))
     args.item
@@ -303,16 +305,16 @@ function VecCreateMPIWithArray_args_reversed!(w::PVector,args)
     nothing
 end
 
-function ksp_setup_parallel_impl(::MPIArray,x,A,b;
+function ksp_setup_parallel_impl(::MPIArray,x,A,b,petsc_comm;
     handles = ksp_handles(),
     low_level_setup = default_ksp_low_level_setup,
     low_level_postpro = default_ksp_low_level_postpro,
     )
 
     (ksp,mat,vec_b,vec_x) = handles
-    args_A = MatCreateMPIAIJWithSplitArrays_args(A)
-    args_b = VecCreateMPIWithArray_args(copy(b))
-    args_x = VecCreateMPIWithArray_args(copy(x))
+    args_A = MatCreateMPIAIJWithSplitArrays_args(A,petsc_comm)
+    args_b = VecCreateMPIWithArray_args(copy(b),petsc_comm)
+    args_x = VecCreateMPIWithArray_args(copy(x),petsc_comm)
     @check_error_code MatCreateMPIAIJWithSplitArrays(args_A...,mat)
     @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
     @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
@@ -323,15 +325,16 @@ function ksp_setup_parallel_impl(::MPIArray,x,A,b;
     low_level_setup(ksp)
     @check_error_code KSPSetUp(ksp[])
     ownership = (args_A,args_b,args_x)
-    setup = KspMPISetup(handles,ownership,low_level_setup,low_level_postpro)
+    setup = KspMPISetup(handles,ownership,low_level_setup,low_level_postpro,petsc_comm)
     setup
 end
 
-mutable struct KspMPISetup{A,B,C,D}
+mutable struct KspMPISetup{A,B,C,D,E}
     handles::A
     ownership::B
     low_level_setup::C
     low_level_postpro::D
+    petsc_comm::E
 end
 
 function ksp_solve!(x,setup::KspMPISetup,b)
@@ -345,10 +348,11 @@ function ksp_solve!(x,setup::KspMPISetup,b)
 end
 
 function ksp_setup!(setup::KspMPISetup,A)
+    petsc_comm = setup.petsc_comm
     (args_A,args_b,args_x) = setup.ownership 
     (ksp,mat,vec_b,vec_x) = setup.handles
     @check_error_code MatDestroy(mat)
-    args_A = MatCreateMPIAIJWithSplitArrays_args(A)
+    args_A = MatCreateMPIAIJWithSplitArrays_args(A,petsc_comm)
     @check_error_code MatCreateMPIAIJWithSplitArrays(args_A...,mat)
     @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
     @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)

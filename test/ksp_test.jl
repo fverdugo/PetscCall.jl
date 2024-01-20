@@ -43,11 +43,12 @@ results = PETSC.ksp_solve!(x2,setup,b)
 # The user needs to explicitly destroy
 # the setup object. This cannot be hidden in
 # Julia finalizers since destructors in petsc are
-# collective operations. Jula finalizers do not guarantee this.
+# collective operations (in parallel runs).
+# Julia finalizers do not guarantee this.
 PETSC.ksp_destroy_setup!(setup)
 
 # The setup object cannot be used anymore.
-# This now would be provably a SEGFAULT:
+# This now would be provably a code dump:
 # PETSC.ksp_solve!(x2,setup,b)
 
 end
