@@ -11,7 +11,7 @@ Documentation for [PETSC](https://github.com/fverdugo/PETSC.jl).
 The goal of this package is to provide a high-level Julia interface to solvers from the PETSc library.
 At this moment it wraps linear solvers from the KSP module in PETSc, but the goal is to also
 provide nonlinear solvers from the SNES module in PETSc. The package also provides a low-level interface with functions
-that are almost 1-to-1 to the corresponding C functions for advanced users.
+that are almost 1-to-1 to the corresponding C functions for advanced users. The low level API is mostly taken from GridapPETSc.jl.
 
 ## Why
 
