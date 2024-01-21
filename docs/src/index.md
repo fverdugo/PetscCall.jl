@@ -22,3 +22,8 @@ such functions are pure Julia types. For instance, the functions to solve system
 take standard Julia (sparse) matrices and vectors. For parallel computations, one can use the pure
 Julia parallel sparse matrices and vectors implemented in PartitionedArrays.jl.
 
+## Related packages
+
+- https://github.com/JuliaParallel/PETSc.jl
+- https://github.com/gridap/GridapPETSc.jl
+
