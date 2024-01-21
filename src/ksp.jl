@@ -1,20 +1,16 @@
 
-getcomm(ranks::MPIArray) = ranks.comm
-getcomm(ranks) = MPI.COMM_SELF
-
-function init(;comm=MPI.COMM_WORLD,args=String[],file="",help="",finalize_atexit=true)
+function init(;args=String[],file="",help="",finalize_atexit=true)
     if !MPI.Initialized()
         MPI.Init()
     end
     if finalize_atexit
         atexit(finalize)
     end
-    petsc_comm = MPI.Comm_dup(comm)
     finalize()
     new_args = ["PETSC"]
     append!(new_args,args)
     @check_error_code PetscInitializeNoPointers(length(new_args),new_args,file,help)
-    petsc_comm
+    nothing
 end
 
 function initialized()
@@ -120,17 +116,24 @@ end
 
 mutable struct KspSeqSetup{A,B,C,D,E}
     handles::A
+    user_handles::Bool
     ownership::B
     low_level_setup::C
     low_level_postpro::D
     petsc_comm::E
 end
 
-function ksp_setup(x,A,b,petsc_comm=MPI.COMM_SELF;
-    handles = ksp_handles(),
+function ksp_setup(x,A,b;
+    petsc_comm=MPI.COMM_SELF,
+    handles = nothing,
     low_level_setup = default_ksp_low_level_setup,
     low_level_postpro = default_ksp_low_level_postpro,
     )
+    user_handles = false
+    if handles === nothing
+        handles = ksp_handles()
+        user_handles = true
+    end
     (ksp,mat,vec_b,vec_x) = handles
     args_A = MatCreateSeqAIJWithArrays_args(A,petsc_comm)
     args_b = VecCreateSeqWithArray_args(copy(b),petsc_comm)
@@ -145,7 +148,7 @@ function ksp_setup(x,A,b,petsc_comm=MPI.COMM_SELF;
     low_level_setup(ksp)
     @check_error_code KSPSetUp(ksp[])
     ownership = (args_A,args_b,args_x)
-    setup = KspSeqSetup(handles,ownership,low_level_setup,low_level_postpro,petsc_comm)
+    setup = KspSeqSetup(handles,user_handles,ownership,low_level_setup,low_level_postpro,petsc_comm)
     setup
 end
 
@@ -174,15 +177,18 @@ function ksp_setup!(setup,A)
 end
 
 function ksp_destroy_setup!(setup::KspSeqSetup)
-    ksp_destroy_handles!(setup.handles)
+    if ! setup.user_handles
+        ksp_destroy_handles!(setup.handles)
+    end
+    nothing
 end
 
 # KSP for PartitionedArrays (default for any back-end)
 # This one is not efficient. It is simple collecting the
 # arrays in the main process and applying the sequential version
 
-function ksp_setup(x::PVector,A::PSparseMatrix,b::PVector,petsc_comm;kwargs...)
-    ksp_setup_parallel_impl(partition(A),x,A,b,petsc_comm;kwargs...)
+function ksp_setup(x::PVector,A::PSparseMatrix,b::PVector;kwargs...)
+    ksp_setup_parallel_impl(partition(A),x,A,b;kwargs...)
 end
 
 struct KspPartitionedSetup{A,B,C}
@@ -191,9 +197,9 @@ struct KspPartitionedSetup{A,B,C}
     caches::C
 end
 
-function ksp_setup_parallel_impl(::AbstractArray,x,A,b,petsc_comm;kwargs...)
+function ksp_setup_parallel_impl(::AbstractArray,x,A,b;kwargs...)
     function local_setup(args...)
-        ksp_setup(args...,petsc_comm;kwargs...)
+        ksp_setup(args...;kwargs...)
     end
     m,n = size(A)
     ranks = linear_indices(partition(A))
@@ -302,12 +308,22 @@ function VecCreateMPIWithArray_args_reversed!(w::PVector,args)
     nothing
 end
 
-function ksp_setup_parallel_impl(::MPIArray,x,A,b,petsc_comm;
-    handles = ksp_handles(),
+setup_petsc_comm(ranks::MPIArray) = MPI.Comm_dup(ranks.comm)
+setup_petsc_comm(ranks) = MPI.COMM_SELF
+getcomm(ranks::MPIArray) = ranks.comm
+getcomm(ranks) = MPI.COMM_SELF
+
+function ksp_setup_parallel_impl(::MPIArray,x,A,b;
+    petsc_comm = PETSC.setup_petsc_comm(partition(A)),
+    handles = nothing,
     low_level_setup = default_ksp_low_level_setup,
     low_level_postpro = default_ksp_low_level_postpro,
     )
-
+    user_handles = false
+    if handles === nothing
+        handles = ksp_handles()
+        user_handles = true
+    end
     (ksp,mat,vec_b,vec_x) = handles
     args_A = MatCreateMPIAIJWithSplitArrays_args(A,petsc_comm)
     args_b = VecCreateMPIWithArray_args(copy(b),petsc_comm)
@@ -322,12 +338,13 @@ function ksp_setup_parallel_impl(::MPIArray,x,A,b,petsc_comm;
     low_level_setup(ksp)
     @check_error_code KSPSetUp(ksp[])
     ownership = (args_A,args_b,args_x)
-    setup = KspMPISetup(handles,ownership,low_level_setup,low_level_postpro,petsc_comm)
+    setup = KspMPISetup(handles,user_handles,ownership,low_level_setup,low_level_postpro,petsc_comm)
     setup
 end
 
 mutable struct KspMPISetup{A,B,C,D,E}
     handles::A
+    user_handles::Bool
     ownership::B
     low_level_setup::C
     low_level_postpro::D
@@ -349,6 +366,7 @@ function ksp_setup!(setup::KspMPISetup,A)
     (args_A,args_b,args_x) = setup.ownership 
     (ksp,mat,vec_b,vec_x) = setup.handles
     @check_error_code MatDestroy(mat)
+    # TODO we can reuse the sparsity pattern here
     args_A = MatCreateMPIAIJWithSplitArrays_args(A,petsc_comm)
     @check_error_code MatCreateMPIAIJWithSplitArrays(args_A...,mat)
     @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
@@ -359,6 +377,9 @@ function ksp_setup!(setup::KspMPISetup,A)
 end
 
 function ksp_destroy_setup!(setup::KspMPISetup)
-    ksp_destroy_handles!(setup.handles)
+    if ! setup.user_handles
+        ksp_destroy_handles!(setup.handles)
+    end
+    nothing
 end
 

@@ -44,12 +44,12 @@ function ksp_tests(distribute,np)
     b = A*x
 
     options = "-ksp_type gmres -ksp_converged_reason -ksp_error_if_not_converged true -pc_type jacobi -ksp_rtol 1.0e-12"
-    args = split(options)
-    comm = PETSC.getcomm(parts)
-    petsc_comm = PETSC.init(;comm,args)
+    PETSC.init(;args = split(options))
+
+    petsc_comm = PETSC.setup_petsc_comm(parts)
 
     x2 = similar(x); x2 .= 0
-    setup = PETSC.ksp_setup(x2,A,b,petsc_comm)
+    setup = PETSC.ksp_setup(x2,A,b;petsc_comm)
     results = PETSC.ksp_solve!(x2,setup,b)
     @test x ≈ x2
 
@@ -77,7 +77,7 @@ function ksp_tests(distribute,np)
         b = A*x
 
         x2 = similar(x); x2 .= 0
-        setup = PETSC.ksp_setup(x2,A,b,petsc_comm)
+        setup = PETSC.ksp_setup(x2,A,b)
         results = PETSC.ksp_solve!(x2,setup,b)
         @test x ≈ x2
 
