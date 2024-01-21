@@ -1,3 +1,4 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 PETSC = "1194c000-87c4-4102-b4a0-a6217ec4849e"
+PartitionedArrays = "5a9dfac6-5c52-46f7-8278-5e2210713be9"

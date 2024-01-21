@@ -5,8 +5,6 @@ DocMeta.setdocmeta!(PETSC, :DocTestSetup, :(using PETSC); recursive=true)
 
 makedocs(;
     modules=[PETSC],
-    authors="Francesc Verdugo <f.verdugo.rojano@vu.nl> and contributors",
-    repo="https://github.com/fverdugo/PETSC.jl/blob/{commit}{path}#{line}",
     sitename="PETSC.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
@@ -16,6 +14,8 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Usage" => "basic.md",
+        "Advanced API" => "reference.md",
     ],
 )
 
