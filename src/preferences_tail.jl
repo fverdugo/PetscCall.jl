@@ -1,5 +1,10 @@
 
 
+"""
+    PETSC.use_system_petsc(;kwargs...)
+
+Document me!
+"""
 function use_system_petsc(;libpetsc_path=nothing)
 
     function findindir(route)
@@ -104,6 +109,11 @@ function use_system_petsc(;libpetsc_path=nothing)
     nothing
 end
 
+"""
+    PETSC.use_petsc_jll(;kwargs...)
+
+Document me!
+"""
 function use_petsc_jll(;PetscScalar=Float64,PetscInt=Int64)
     libpetsc_provider = "PETSc_jll"
     @set_preferences!(
