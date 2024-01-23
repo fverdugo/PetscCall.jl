@@ -61,7 +61,7 @@ function ksp_tests(distribute,np)
     results = PETSC.ksp_solve!(x2,setup,b)
     @test 2*x ≈ x2
 
-    PETSC.ksp_destroy_setup!(setup)
+    PETSC.ksp_finalize!(setup)
 
     # Now with an unordered partition
 
@@ -89,7 +89,7 @@ function ksp_tests(distribute,np)
         results = PETSC.ksp_solve!(x2,setup,b)
         @test 2*x ≈ x2
 
-        PETSC.ksp_destroy_setup!(setup)
+        PETSC.ksp_finalize!(setup)
     end
 
 end

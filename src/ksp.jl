@@ -72,11 +72,11 @@ Document me!
 function ksp_solve! end
 
 """
-    PETSC.ksp_destroy_setup!(setup)
+    PETSC.ksp_finalize!(setup)
 
 Document me!
 """
-function ksp_destroy_setup! end
+function ksp_finalize! end
 
 function ksp_handles()
     ksp = Ref{KSP}()
@@ -171,7 +171,7 @@ function ksp_setup!(setup,A)
     setup
 end
 
-function ksp_destroy_setup!(setup::KspSeqSetup)
+function ksp_finalize!(setup::KspSeqSetup)
     if ! setup.user_handles
         ksp_destroy_handles!(setup.handles)
     end
@@ -234,8 +234,8 @@ function ksp_setup!(setup::KspPartitionedSetup,A)
     setup
 end
 
-function ksp_destroy_setup!(setup::KspPartitionedSetup)
-    map_main(ksp_destroy_setup!,setup.setup_in_main)
+function ksp_finalize!(setup::KspPartitionedSetup)
+    map_main(ksp_finalize!,setup.setup_in_main)
     nothing
 end
 
@@ -371,7 +371,7 @@ function ksp_setup!(setup::KspMPISetup,A)
     setup
 end
 
-function ksp_destroy_setup!(setup::KspMPISetup)
+function ksp_finalize!(setup::KspMPISetup)
     if ! setup.user_handles
         ksp_destroy_handles!(setup.handles)
     end

@@ -45,7 +45,7 @@ results = PETSC.ksp_solve!(x2,setup,b)
 # Julia finalizers since destructors in petsc are
 # collective operations (in parallel runs).
 # Julia finalizers do not guarantee this.
-PETSC.ksp_destroy_setup!(setup)
+PETSC.ksp_finalize!(setup)
 
 # The setup object cannot be used anymore.
 # This now would be provably a code dump:

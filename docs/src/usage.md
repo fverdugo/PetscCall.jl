@@ -48,7 +48,7 @@
     # Julia finalizers since destructors in petsc are
     # collective operations (in parallel runs).
     # Julia finalizers do not guarantee this.
-    PETSC.ksp_destroy_setup!(setup)
+    PETSC.ksp_finalize!(setup)
     
     # The setup object cannot be used anymore.
     # This now would be provably a code dump:
@@ -109,7 +109,7 @@ First write the parallel code in a function in a file `demo.jl`.
         results = PETSC.ksp_solve!(x2,setup,b)
         @test 2*x ≈ x2
     
-        PETSC.ksp_destroy_setup!(setup)
+        PETSC.ksp_finalize!(setup)
     end
 
 Then, test your code with the debug back-end of PartitionedArrays.jl
