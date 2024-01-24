@@ -64,6 +64,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using PETSC
-          DocMeta.setdocmeta!(PETSC, :DocTestSetup, :(using PETSC); recursive=true)
-          doctest(PETSC)
+          using PetscCall
+          DocMeta.setdocmeta!(PetscCall, :DocTestSetup, :(using PetscCall); recursive=true)
+          doctest(PetscCall)
