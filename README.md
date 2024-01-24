@@ -1,6 +1,6 @@
 # PetscCall
 
-This package provides easy access to PETSc solvers in sequential and parallel Julia computations.
+This package provides easy access to PETSc solvers in sequential and parallel Julia computations. See documentation for further details.
 
 
 | **Documentation** |
