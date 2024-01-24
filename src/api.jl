@@ -45,11 +45,11 @@ macro wrapper(fn,rt,argts,args,url)
   end
   if isempty(rstrip(url))
     str = """
-        PETSC.$(fn.value)$(sargs)
+        PetscCall.$(fn.value)$(sargs)
     """
   else
     str = """
-        PETSC.$(fn.value)$(sargs)
+        PetscCall.$(fn.value)$(sargs)
 
     See [PETSc manual]($url).
     """

@@ -1,7 +1,7 @@
 
 
 """
-    PETSC.use_system_petsc(;kwargs...)
+    PetscCall.use_system_petsc(;kwargs...)
 
 Document me!
 """
@@ -40,8 +40,8 @@ function use_system_petsc(;libpetsc_path=nothing)
         Example
         =======
         
-        julia> using PETSC
-        julia> using PETSC.use_system_petsc(;libpetsc_path="path/to/libpetsc.so")
+        julia> using PetscCall
+        julia> using PetscCall.use_system_petsc(;libpetsc_path="path/to/libpetsc.so")
         """
         error(msg)
     end
@@ -97,7 +97,7 @@ function use_system_petsc(;libpetsc_path=nothing)
                       "PetscInt"=>string(PetscInt),
                      )
     msg = """
-    PETSC preferences changed!
+    PetscCall preferences changed!
     The new preferences are:
         libpetsc_provider = $(libpetsc_provider)
         libpetsc_path = $(libpetsc_path)
@@ -110,7 +110,7 @@ function use_system_petsc(;libpetsc_path=nothing)
 end
 
 """
-    PETSC.use_petsc_jll(;kwargs...)
+    PetscCall.use_petsc_jll(;kwargs...)
 
 Document me!
 """
@@ -122,7 +122,7 @@ function use_petsc_jll(;PetscScalar=Float64,PetscInt=Int64)
         "PetscInt"=>string(PetscInt),
        )
     msg = """
-    PETSC preferences changed!
+    PetscCall preferences changed!
     The new preferences are:
         libpetsc_provider = $(libpetsc_provider)
         PetscScalar = $(string(PetscScalar))

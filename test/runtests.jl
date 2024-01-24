@@ -1,6 +1,6 @@
-module PETSCTest
+module PetscCallTest
 
-using PETSC
+using PetscCall
 using Test
 
 @testset "KSP" begin

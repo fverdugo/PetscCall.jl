@@ -1,14 +1,14 @@
-using PETSC
+using PetscCall
 using Documenter
 
-DocMeta.setdocmeta!(PETSC, :DocTestSetup, :(using PETSC); recursive=true)
+DocMeta.setdocmeta!(PetscCall, :DocTestSetup, :(using PetscCall); recursive=true)
 
 makedocs(;
-    modules=[PETSC],
-    sitename="PETSC.jl",
+    modules=[PetscCall],
+    sitename="PetscCall.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://fverdugo.github.io/PETSC.jl",
+        canonical="https://fverdugo.github.io/PetscCall.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -22,6 +22,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/fverdugo/PETSC.jl",
+    repo="github.com/fverdugo/PetscCall.jl",
     devbranch="main",
 )

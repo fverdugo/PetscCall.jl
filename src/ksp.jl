@@ -51,28 +51,28 @@ end
 
 """
 
-    PETSC.ksp_setup(x,A,b;kwargs...)
+    PetscCall.ksp_setup(x,A,b;kwargs...)
 
 Document me!
 """
 function ksp_setup end
 
 """
-    PETSC.ksp_setup!(setup,A)
+    PetscCall.ksp_setup!(setup,A)
 
 Document me!
 """
 function ksp_setup! end
 
 """
-    PETSC.ksp_solve!(x,setup,b)
+    PetscCall.ksp_solve!(x,setup,b)
 
 Document me!
 """
 function ksp_solve! end
 
 """
-    PETSC.ksp_finalize!(setup)
+    PetscCall.ksp_finalize!(setup)
 
 Document me!
 """
@@ -134,8 +134,8 @@ function ksp_setup(x,A,b;
     args_b = VecCreateSeqWithArray_args(copy(b),petsc_comm)
     args_x = VecCreateSeqWithArray_args(copy(x),petsc_comm)
     @check_error_code MatCreateSeqAIJWithArrays(args_A...,mat)
-    @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
-    @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyBegin(mat[],MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyEnd(mat[],MAT_FINAL_ASSEMBLY)
     @check_error_code VecCreateSeqWithArray(args_b...,vec_b)
     @check_error_code VecCreateSeqWithArray(args_x...,vec_x)
     @check_error_code KSPCreate(petsc_comm,ksp)
@@ -164,8 +164,8 @@ function ksp_setup!(setup,A)
     @check_error_code MatDestroy(mat)
     args_A = MatCreateSeqAIJWithArrays_args(A,petsc_comm)
     @check_error_code MatCreateSeqAIJWithArrays(args_A...,mat)
-    @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
-    @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyBegin(mat[],MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyEnd(mat[],MAT_FINAL_ASSEMBLY)
     @check_error_code KSPSetOperators(ksp[],mat[],mat[])
     setup.ownership = (args_A,args_b,args_x)
     setup
@@ -309,7 +309,7 @@ getcomm(ranks::MPIArray) = ranks.comm
 getcomm(ranks) = MPI.COMM_SELF
 
 function ksp_setup_parallel_impl(::MPIArray,x,A,b;
-    petsc_comm = PETSC.setup_petsc_comm(partition(A)),
+    petsc_comm = PetscCall.setup_petsc_comm(partition(A)),
     handles = nothing,
     low_level_setup = default_ksp_low_level_setup,
     low_level_postpro = default_ksp_low_level_postpro,
@@ -324,8 +324,8 @@ function ksp_setup_parallel_impl(::MPIArray,x,A,b;
     args_b = VecCreateMPIWithArray_args(copy(b),petsc_comm)
     args_x = VecCreateMPIWithArray_args(copy(x),petsc_comm)
     @check_error_code MatCreateMPIAIJWithSplitArrays(args_A...,mat)
-    @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
-    @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyBegin(mat[],MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyEnd(mat[],MAT_FINAL_ASSEMBLY)
     @check_error_code VecCreateMPIWithArray(args_b...,vec_b)
     @check_error_code VecCreateMPIWithArray(args_x...,vec_x)
     @check_error_code KSPCreate(MPI.COMM_SELF,ksp)
@@ -364,8 +364,8 @@ function ksp_setup!(setup::KspMPISetup,A)
     # TODO we can reuse the sparsity pattern here
     args_A = MatCreateMPIAIJWithSplitArrays_args(A,petsc_comm)
     @check_error_code MatCreateMPIAIJWithSplitArrays(args_A...,mat)
-    @check_error_code MatAssemblyBegin(mat[],PETSC.MAT_FINAL_ASSEMBLY)
-    @check_error_code MatAssemblyEnd(mat[],PETSC.MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyBegin(mat[],MAT_FINAL_ASSEMBLY)
+    @check_error_code MatAssemblyEnd(mat[],MAT_FINAL_ASSEMBLY)
     @check_error_code KSPSetOperators(ksp[],mat[],mat[])
     setup.ownership = (args_A,args_b,args_x)
     setup

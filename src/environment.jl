@@ -1,6 +1,6 @@
 
 """
-    PETSC.init(:kwargs...)
+    PetscCall.init(:kwargs...)
 
 Document me!
 """
@@ -12,14 +12,14 @@ function init(;args=String[],file="",help="",finalize_atexit=true)
         atexit(finalize)
     end
     finalize()
-    new_args = ["PETSC"]
+    new_args = ["PetscCall"]
     append!(new_args,args)
     @check_error_code PetscInitializeNoPointers(length(new_args),new_args,file,help)
     nothing
 end
 
 """
-    PETSC.initialized()
+    PetscCall.initialized()
 
 Document me!
 """
@@ -30,7 +30,7 @@ function initialized()
 end
 
 """
-    PETSC.finalize()
+    PetscCall.finalize()
 
 Document me!
 """
@@ -42,7 +42,7 @@ function finalize()
 end
 
 """
-    PETSC.with(f;kwargs...)
+    PetscCall.with(f;kwargs...)
 
 Document me!
 """

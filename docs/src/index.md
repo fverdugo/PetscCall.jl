@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = PETSC
+CurrentModule = PetscCall
 ```
 
-# PETSC
+# PetscCall
 
-Documentation for [PETSC](https://github.com/fverdugo/PETSC.jl).
+Documentation for [PetscCall](https://github.com/fverdugo/PetscCall.jl).
 
 ## What
 

@@ -1,7 +1,7 @@
 
 using SparseArrays
 using Test
-using PETSC
+using PetscCall
 using PartitionedArrays
 
 function ksp_tests(distribute,np)
@@ -44,24 +44,24 @@ function ksp_tests(distribute,np)
     b = A*x
 
     options = "-ksp_type gmres -ksp_converged_reason -ksp_error_if_not_converged true -pc_type jacobi -ksp_rtol 1.0e-12"
-    PETSC.init(;args = split(options))
+    PetscCall.init(;args = split(options))
 
-    petsc_comm = PETSC.setup_petsc_comm(parts)
+    petsc_comm = PetscCall.setup_petsc_comm(parts)
 
     x2 = similar(x); x2 .= 0
-    setup = PETSC.ksp_setup(x2,A,b;petsc_comm)
-    results = PETSC.ksp_solve!(x2,setup,b)
+    setup = PetscCall.ksp_setup(x2,A,b;petsc_comm)
+    results = PetscCall.ksp_solve!(x2,setup,b)
     @test x ≈ x2
 
     b = 2*b
-    results = PETSC.ksp_solve!(x2,setup,b)
+    results = PetscCall.ksp_solve!(x2,setup,b)
     @test 2*x ≈ x2
 
-    PETSC.ksp_setup!(setup,A)
-    results = PETSC.ksp_solve!(x2,setup,b)
+    PetscCall.ksp_setup!(setup,A)
+    results = PetscCall.ksp_solve!(x2,setup,b)
     @test 2*x ≈ x2
 
-    PETSC.ksp_finalize!(setup)
+    PetscCall.ksp_finalize!(setup)
 
     # Now with an unordered partition
 
@@ -77,19 +77,19 @@ function ksp_tests(distribute,np)
         b = A*x
 
         x2 = similar(x); x2 .= 0
-        setup = PETSC.ksp_setup(x2,A,b)
-        results = PETSC.ksp_solve!(x2,setup,b)
+        setup = PetscCall.ksp_setup(x2,A,b)
+        results = PetscCall.ksp_solve!(x2,setup,b)
         @test x ≈ x2
 
         b = 2*b
-        results = PETSC.ksp_solve!(x2,setup,b)
+        results = PetscCall.ksp_solve!(x2,setup,b)
         @test 2*x ≈ x2
 
-        PETSC.ksp_setup!(setup,A)
-        results = PETSC.ksp_solve!(x2,setup,b)
+        PetscCall.ksp_setup!(setup,A)
+        results = PetscCall.ksp_solve!(x2,setup,b)
         @test 2*x ≈ x2
 
-        PETSC.ksp_finalize!(setup)
+        PetscCall.ksp_finalize!(setup)
     end
 
 end

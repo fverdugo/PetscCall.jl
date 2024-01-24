@@ -1,4 +1,4 @@
-name = "PETSC"
+name = "PetscCall"
 uuid = "1194c000-87c4-4102-b4a0-a6217ec4849e"
 authors = ["Francesc Verdugo <f.verdugo.rojano@vu.nl> and contributors"]
 version = "0.1.0"

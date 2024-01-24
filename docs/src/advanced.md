@@ -2,7 +2,7 @@
 # Advanced API
 
 ```@autodocs
-Modules = [PETSC]
+Modules = [PetscCall]
 Pages = ["api.jl"]
 ```
 

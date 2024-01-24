@@ -1,4 +1,4 @@
-module PETSC
+module PetscCall
 
 using Preferences
 using Libdl

@@ -4,21 +4,21 @@
 ## Configuration
 
 ```@autodocs
-Modules = [PETSC]
+Modules = [PetscCall]
 Pages = ["preferences_tail.jl"]
 ```
 
 ## Environment
 
 ```@autodocs
-Modules = [PETSC]
+Modules = [PetscCall]
 Pages = ["environment.jl"]
 ```
 
 ## Linear solvers (KSP)
 
 ```@autodocs
-Modules = [PETSC]
+Modules = [PetscCall]
 Pages = ["ksp.jl"]
 ```
 

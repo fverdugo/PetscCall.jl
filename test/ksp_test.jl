@@ -2,7 +2,7 @@ module KSPTests
 
 using SparseArrays
 using Test
-using PETSC
+using PetscCall
 using LinearAlgebra
 
 # Create a spare matrix and a vector in Julia
@@ -15,14 +15,14 @@ A = sparse(I,J,V,m,n)
 x = ones(m)
 b = A*x
 
-# PETSC options
+# PetscCall options
 options = "-ksp_type gmres -ksp_monitor -pc_type ilu"
-PETSC.init(args=split(options))
+PetscCall.init(args=split(options))
 
 # Say, we want to solve A*x=b
 x2 = similar(x); x2 .= 0
-setup = PETSC.ksp_setup(x2,A,b)
-results = PETSC.ksp_solve!(x2,setup,b)
+setup = PetscCall.ksp_setup(x2,A,b)
+results = PetscCall.ksp_solve!(x2,setup,b)
 @test x ≈ x2
 
 # Info about the solution process
@@ -30,14 +30,14 @@ results = PETSC.ksp_solve!(x2,setup,b)
 
 # Now with the same matrix, but a different rhs
 b = 2*b
-results = PETSC.ksp_solve!(x2,setup,b)
+results = PetscCall.ksp_solve!(x2,setup,b)
 @test 2*x ≈ x2
 
 # Now with a different matrix, but reusing as much as possible
 # from the previous solve.
 A = 2*A
-PETSC.ksp_setup!(setup,A)
-results = PETSC.ksp_solve!(x2,setup,b)
+PetscCall.ksp_setup!(setup,A)
+results = PetscCall.ksp_solve!(x2,setup,b)
 @test x ≈ x2
 
 # The user needs to explicitly destroy
@@ -45,10 +45,10 @@ results = PETSC.ksp_solve!(x2,setup,b)
 # Julia finalizers since destructors in petsc are
 # collective operations (in parallel runs).
 # Julia finalizers do not guarantee this.
-PETSC.ksp_finalize!(setup)
+PetscCall.ksp_finalize!(setup)
 
 # The setup object cannot be used anymore.
 # This now would be provably a code dump:
-# PETSC.ksp_solve!(x2,setup,b)
+# PetscCall.ksp_solve!(x2,setup,b)
 
 end
