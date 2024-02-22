@@ -508,6 +508,7 @@ Mat() = Mat(Ptr{Cvoid}())
 Base.convert(::Type{Mat},p::Ptr{Cvoid}) = Mat(p)
 Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Mat) = v.ptr
 
+@wrapper(:MatCreate,PetscErrorCode,(MPI.Comm,Ptr{Mat}),(comm,mat),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreate.html")
 @wrapper(:MatCreateAIJ,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{Mat}),(comm,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,mat),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateAIJ.html")
 @wrapper(:MatCreateSeqAIJ,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{Mat}),(comm,m,n,nz,nnz,mat),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateSeqAIJ.html")
 @wrapper(:MatCreateSeqAIJWithArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,i,j,a,mat),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatCreateSeqAIJWithArrays.html")
@@ -515,6 +516,10 @@ Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Mat) = v.ptr
 @wrapper(:MatCreateMPIAIJWithSplitArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,M,N,i,j,a,oi,oj,oa,mat),"https://petsc.org/release/docs/manualpages/Mat/MatCreateMPIAIJWithSplitArrays.html")
 @wrapper(:MatDestroy,PetscErrorCode,(Ptr{Mat},),(A,),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatDestroy.html")
 @wrapper(:MatView,PetscErrorCode,(Mat,PetscViewer),(mat,viewer),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatView.html")
+@wrapper(:MatSetType,PetscErrorCode,(Mat,MatType),(mat,matype),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSetType.html")
+@wrapper(:MatSetSizes,PetscErrorCode,(Mat,PetscInt,PetscInt,PetscInt,PetscInt),(A,m,n,M,N),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSetSizes.html")
+@wrapper(:MatSetPreallocationCOO,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},Ptr{PetscInt}),(A,ncoo,coo_i,coo_j),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSetPreallocationCOO.html")
+@wrapper(:MatSetValuesCOO,PetscErrorCode,(Mat,Ptr{PetscScalar},InsertMode),(A,coo_v,imode),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSetValuesCOO.html")
 @wrapper(:MatSetValues,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{PetscScalar},InsertMode),(mat,m,idxm,n,idxn,v,addv),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSetValues.html")
 @wrapper(:MatGetValues,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{PetscScalar}),(mat,m,idxm,n,idxn,v),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatGetValues.html")
 @wrapper(:MatAssemblyBegin,PetscErrorCode,(Mat,MatAssemblyType),(mat,typ),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatAssemblyBegin.html")
@@ -531,6 +536,7 @@ Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Mat) = v.ptr
 @wrapper(:MatSetBlockSize,PetscErrorCode,(Mat,PetscInt),(mat,bs),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatSetBlockSize.html")
 @wrapper(:MatMumpsSetIcntl,PetscErrorCode,(Mat,PetscInt,PetscInt),(mat,icntl,val),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMumpsSetIcntl.html")
 @wrapper(:MatMumpsSetCntl,PetscErrorCode,(Mat,PetscInt,PetscReal),(mat,icntl,val),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMumpsSetCntl.html")
+@wrapper(:MatMPIAIJSetPreallocation,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt}),(B,d_nz,d_nnz,o_nz,o_nnz),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Mat/MatMPIAIJSetPreallocation.html")
 
 # Null space related
 
