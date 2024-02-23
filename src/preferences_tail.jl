@@ -29,6 +29,8 @@ function use_system_petsc(;libpetsc_path=nothing)
                 end
             end
         end
+    end
+    if libpetsc_path === nothing
         msg = """
         Unable to find a Petsc installation in the system.
 
@@ -39,7 +41,7 @@ function use_system_petsc(;libpetsc_path=nothing)
 
         Example
         =======
-        
+
         julia> using PetscCall
         julia> using PetscCall.use_system_petsc(;libpetsc_path="path/to/libpetsc.so")
         """
@@ -49,7 +51,7 @@ function use_system_petsc(;libpetsc_path=nothing)
     flags = Libdl.RTLD_LAZY | Libdl.RTLD_DEEPBIND | Libdl.RTLD_GLOBAL
     old_libpetsc_handle = libpetsc_handle[]
     new_libpetsc_handle = Libdl.dlopen(libpetsc_path,flags,throw_error=true)
-    try 
+    try
         libpetsc_handle[] = new_libpetsc_handle
         scalar_type = Ref{PetscDataType}()
         scalar_found = Ref{PetscBool}()
