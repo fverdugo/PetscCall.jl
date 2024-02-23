@@ -59,7 +59,7 @@ macro wrapper(fn,rt,argts,args,url)
     push!(PRELOADS,($hn,$fn))
     @doc $str
     @inline function $(fn.value)($(args.args...))
-      @boundscheck @assert $(hn)[] != C_NULL "Missing symbol. Re-configure and compile PETSc."
+      @boundscheck @assert $(hn)[] != C_NULL "Missing symbol. Open a fresh julia session"
       ccall($(hn)[],$rt,$argts,$(args.args...))
     end
   end
@@ -280,6 +280,7 @@ Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Vec) = v.ptr
 @wrapper(:VecNorm,PetscErrorCode,(Vec,NormType,Ptr{PetscReal}),(x,typ,val),"https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/Vec/VecNorm.html")
 @wrapper(:VecGhostGetLocalForm,PetscErrorCode,(Vec,Ptr{Vec}),(g,l),"https://petsc.org/release/docs/manualpages/Vec/VecGhostGetLocalForm.html")
 @wrapper(:VecGhostRestoreLocalForm,PetscErrorCode,(Vec,Ptr{Vec}),(g,l),"https://petsc.org/release/docs/manualpages/Vec/VecGhostRestoreLocalForm.html")
+@wrapper(:VecZeroEntries,PetscErrorCode,(Vec,),(v,),"https://petsc.org/release/docs/manualpages/Vec/VecZeroEntries.html")
 
 # Matrix related functions
 
