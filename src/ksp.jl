@@ -271,8 +271,6 @@ end
 
 function VecCreateMPIWithArray_args(v::PVector,petsc_comm,block_size=1)
     @assert isa(partition(v),MPIArray)
-    # TODO not asserted assumptions:
-    # Assumes that global ids are ordered and that the vector is assembled
     rows = axes(v,1)
     N = length(rows)
     function setup(v_own)
@@ -330,7 +328,7 @@ function ksp_setup_parallel_impl(::MPIArray,x,A,b;
     @check_error_code MatAssemblyEnd(mat[],MAT_FINAL_ASSEMBLY)
     @check_error_code VecCreateMPIWithArray(args_b...,vec_b)
     @check_error_code VecCreateMPIWithArray(args_x...,vec_x)
-    @check_error_code KSPCreate(MPI.COMM_SELF,ksp)
+    @check_error_code KSPCreate(petsc_comm,ksp)
     @check_error_code KSPSetOperators(ksp[],mat[],mat[])
     low_level_setup(ksp)
     @check_error_code KSPSetUp(ksp[])
