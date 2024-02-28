@@ -373,7 +373,9 @@ end
 
 function ksp_finalize!(setup::KspMPISetup)
     if ! setup.user_handles
-        ksp_destroy_handles!(setup.handles)
+        ownership = setup.ownership
+        handles = setup.handles
+        GC.@preserve ownership ksp_destroy_handles!(handles)
     end
     nothing
 end
