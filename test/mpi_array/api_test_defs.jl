@@ -32,6 +32,31 @@ function spmv_petsc!(b,A,x)
     b
 end
 
+function test_spmm_petsc(A,B)
+    parts = linear_indices(partition(A))
+    petsc_comm = PetscCall.setup_petsc_comm(parts)
+    C1, cacheC = spmm(A,B,reuse=true)
+    mat_A = Ref{PetscCall.Mat}()
+    mat_B = Ref{PetscCall.Mat}()
+    mat_C = Ref{PetscCall.Mat}()
+    args_A = PetscCall.MatCreateMPIAIJWithSplitArrays_args(A,petsc_comm)
+    args_B = PetscCall.MatCreateMPIAIJWithSplitArrays_args(B,petsc_comm)
+    ownership = (args_A,args_B)
+    PetscCall.@check_error_code PetscCall.MatCreateMPIAIJWithSplitArrays(args_A...,mat_A)
+    PetscCall.@check_error_code PetscCall.MatCreateMPIAIJWithSplitArrays(args_B...,mat_B)
+    PetscCall.@check_error_code PetscCall.MatProductCreate(mat_A[],mat_B[],C_NULL,mat_C)
+    PetscCall.@check_error_code PetscCall.MatProductSetType(mat_C[],PetscCall.MATPRODUCT_AB)
+    PetscCall.@check_error_code PetscCall.MatProductSetFromOptions(mat_C[])
+    PetscCall.@check_error_code PetscCall.MatProductSymbolic(mat_C[])
+    PetscCall.@check_error_code PetscCall.MatProductNumeric(mat_C[])
+    PetscCall.@check_error_code PetscCall.MatProductReplaceMats(mat_A[],mat_B[],C_NULL,mat_C[])
+    PetscCall.@check_error_code PetscCall.MatProductNumeric(mat_C[])
+    PetscCall.@check_error_code PetscCall.MatProductClear(mat_C[])
+    GC.@preserve ownership PetscCall.@check_error_code PetscCall.MatDestroy(mat_A)
+    GC.@preserve ownership PetscCall.@check_error_code PetscCall.MatDestroy(mat_B)
+    GC.@preserve ownership PetscCall.@check_error_code PetscCall.MatDestroy(mat_C)
+end
+
 function main(distribute,params)
     nodes_per_dir = params.nodes_per_dir
     parts_per_dir = params.parts_per_dir
@@ -53,6 +78,8 @@ function main(distribute,params)
     @test norm(b1) > tol
     @test norm(b2) > tol
     @test norm(c)/norm(b1) < tol
+    B = 2*A
+    test_spmm_petsc(A,B)
 end
 
 end #module
