@@ -53,7 +53,7 @@ macro wrapper(fn,rt,argts,args,url)
     str = """
         PetscCall.$(fn.value)$(sargs)
 
-    See [PETSc manual]($url).
+    See [PETSc manual]($docs_url$url).
     """
   end
   expr = quote
@@ -127,11 +127,11 @@ end
 
 #Petsc init related functions
 
-@wrapper(:PetscInitializeNoArguments,PetscErrorCode,(),(),"$docs_url/Sys/PetscInitializeNoArguments.html")
+@wrapper(:PetscInitializeNoArguments,PetscErrorCode,(),(),"/Sys/PetscInitializeNoArguments.html")
 @wrapper(:PetscInitializeNoPointers,PetscErrorCode,(Cint,Ptr{Cstring},Cstring,Cstring),(argc,args,filename,help),"")
-@wrapper(:PetscFinalize,PetscErrorCode,(),(),"$docs_url/Sys/PetscFinalize.html")
-@wrapper(:PetscFinalized,PetscErrorCode,(Ptr{PetscBool},),(flag,),"$docs_url/Sys/PetscFinalized.html")
-@wrapper(:PetscInitialized,PetscErrorCode,(Ptr{PetscBool},),(flag,),"$docs_url/Sys/PetscInitialized.html")
+@wrapper(:PetscFinalize,PetscErrorCode,(),(),"/Sys/PetscFinalize.html")
+@wrapper(:PetscFinalized,PetscErrorCode,(Ptr{PetscBool},),(flag,),"/Sys/PetscFinalized.html")
+@wrapper(:PetscInitialized,PetscErrorCode,(Ptr{PetscBool},),(flag,),"/Sys/PetscInitialized.html")
 
 # viewer related functions
 
@@ -147,8 +147,8 @@ PetscViewer() = PetscViewer(Ptr{Cvoid}())
 Base.convert(::Type{PetscViewer},p::Ptr{Cvoid}) = PetscViewer(p)
 Base.unsafe_convert(::Type{Ptr{Cvoid}},v::PetscViewer) = v.ptr
 
-@wrapper(:PETSC_VIEWER_STDOUT_,PetscViewer,(MPI.Comm,),(comm,),"$docs_url/Viewer/PETSC_VIEWER_STDOUT_.html")
-@wrapper(:PETSC_VIEWER_DRAW_,PetscViewer,(MPI.Comm,),(comm,),"$docs_url/Viewer/PETSC_VIEWER_DRAW_.html")
+@wrapper(:PETSC_VIEWER_STDOUT_,PetscViewer,(MPI.Comm,),(comm,),"/Viewer/PETSC_VIEWER_STDOUT_.html")
+@wrapper(:PETSC_VIEWER_DRAW_,PetscViewer,(MPI.Comm,),(comm,),"/Viewer/PETSC_VIEWER_DRAW_.html")
 
 """
     @PETSC_VIEWER_STDOUT_SELF
@@ -249,40 +249,40 @@ Vec() = Vec(Ptr{Cvoid}())
 Base.convert(::Type{Vec},p::Ptr{Cvoid}) = Vec(p)
 Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Vec) = v.ptr
 
-@wrapper(:VecCreateSeq,PetscErrorCode,(MPI.Comm,PetscInt,Ptr{Vec}),(comm,n,vec),"$docs_url/Vec/VecCreateSeq.html")
-@wrapper(:VecCreateSeqWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Ptr{PetscScalar},Ptr{Vec}),(comm,bs,n,array,vec),"$docs_url/Vec/VecCreateSeqWithArray.html")
-@wrapper(:VecCreateMPIWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscScalar},Ptr{Vec}),(comm,bs,n,N,array,vec),"$docs_url/Vec/VecCreateMPIWithArray.html")
-@wrapper(:VecCreateGhost,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{Vec}),(comm,n,N,nghost,ghosts,vv),"$docs_url/Vec/VecCreateGhost.html")
-@wrapper(:VecCreateGhostWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscScalar},Ptr{Vec}),(comm,n,N,nghost,ghosts,array,vv),"$docs_url/Vec/VecCreateGhostWithArray.html")
-@wrapper(:VecCreateMPI,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Vec),(comm,n,N,v),"$docs_url/Vec/VecCreateMPI.html")
-@wrapper(:VecDestroy,PetscErrorCode,(Ptr{Vec},),(vec,),"$docs_url/Vec/VecDestroy.html")
-@wrapper(:VecView,PetscErrorCode,(Vec,PetscViewer),(vec,viewer),"$docs_url/Vec/VecView.html")
-@wrapper(:VecSetValues,PetscErrorCode,(Vec,PetscInt,Ptr{PetscInt},Ptr{PetscScalar},InsertMode),(x,ni,ix,y,iora),"$docs_url/Vec/VecSetValues.html")
-@wrapper(:VecGetValues,PetscErrorCode,(Vec,PetscInt,Ptr{PetscInt},Ptr{PetscScalar}),(x,ni,ix,y),"$docs_url/Vec/VecGetValues.html")
-@wrapper(:VecGetArray,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"$docs_url/Vec/VecGetArray.html")
-@wrapper(:VecGetArrayRead,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"$docs_url/Vec/VecGetArrayRead.html")
-@wrapper(:VecGetArrayWrite,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"$docs_url/Vec/VecGetArrayWrite.html")
-@wrapper(:VecRestoreArray,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"$docs_url/Vec/VecRestoreArray.html")
-@wrapper(:VecRestoreArrayRead,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"$docs_url/Vec/VecRestoreArrayRead.html")
-@wrapper(:VecRestoreArrayWrite,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"$docs_url/Vec/VecRestoreArrayWrite.html")
-@wrapper(:VecGetSize,PetscErrorCode,(Vec,Ptr{PetscInt}),(vec,n),"$docs_url/Vec/VecGetSize.html")
-@wrapper(:VecGetLocalSize,PetscErrorCode,(Vec,Ptr{PetscInt}),(vec,n),"$docs_url/Vec/VecGetLocalSize.html")
-@wrapper(:VecAssemblyBegin,PetscErrorCode,(Vec,),(vec,),"$docs_url/Vec/VecAssemblyBegin.html")
-@wrapper(:VecAssemblyEnd,PetscErrorCode,(Vec,),(vec,),"$docs_url/Vec/VecAssemblyEnd.html")
-@wrapper(:VecPlaceArray,PetscErrorCode,(Vec,Ptr{PetscScalar}),(vec,array),"$docs_url/Vec/VecPlaceArray.html")
-@wrapper(:VecResetArray,PetscErrorCode,(Vec,),(vec,),"$docs_url/Vec/VecResetArray.html")
-@wrapper(:VecScale,PetscErrorCode,(Vec,PetscScalar),(x,alpha),"$docs_url/Vec/VecScale.html")
-@wrapper(:VecSet,PetscErrorCode,(Vec,PetscScalar),(x,alpha),"$docs_url/Vec/VecSet.html")
-@wrapper(:VecDuplicate,PetscErrorCode,(Vec,Ptr{Vec}),(v,newv),"$docs_url/Vec/VecDuplicate.html")
-@wrapper(:VecCopy,PetscErrorCode,(Vec,Vec),(x,y),"$docs_url/Vec/VecCopy.html")
-@wrapper(:VecAXPY,PetscErrorCode,(Vec,PetscScalar,Vec),(y,alpha,x),"$docs_url/Vec/VecAXPY.html")
-@wrapper(:VecAYPX,PetscErrorCode,(Vec,PetscScalar,Vec),(y,beta,x),"$docs_url/Vec/VecAYPX.html")
-@wrapper(:VecAXPBY,PetscErrorCode,(Vec,PetscScalar,PetscScalar,Vec),(y,alpha,beta,x),"$docs_url/Vec/VecAXPBY.html")
-@wrapper(:VecSetOption,PetscErrorCode,(Vec,VecOption,PetscBool),(x,op,flg),"$docs_url/Vec/VecSetOption.html")
-@wrapper(:VecNorm,PetscErrorCode,(Vec,NormType,Ptr{PetscReal}),(x,typ,val),"$docs_url/Vec/VecNorm.html")
-@wrapper(:VecGhostGetLocalForm,PetscErrorCode,(Vec,Ptr{Vec}),(g,l),"$docs_url/Vec/VecGhostGetLocalForm.html")
-@wrapper(:VecGhostRestoreLocalForm,PetscErrorCode,(Vec,Ptr{Vec}),(g,l),"$docs_url/Vec/VecGhostRestoreLocalForm.html")
-@wrapper(:VecZeroEntries,PetscErrorCode,(Vec,),(v,),"$docs_url/Vec/VecZeroEntries.html")
+@wrapper(:VecCreateSeq,PetscErrorCode,(MPI.Comm,PetscInt,Ptr{Vec}),(comm,n,vec),"/Vec/VecCreateSeq.html")
+@wrapper(:VecCreateSeqWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Ptr{PetscScalar},Ptr{Vec}),(comm,bs,n,array,vec),"/Vec/VecCreateSeqWithArray.html")
+@wrapper(:VecCreateMPIWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscScalar},Ptr{Vec}),(comm,bs,n,N,array,vec),"/Vec/VecCreateMPIWithArray.html")
+@wrapper(:VecCreateGhost,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{Vec}),(comm,n,N,nghost,ghosts,vv),"/Vec/VecCreateGhost.html")
+@wrapper(:VecCreateGhostWithArray,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscScalar},Ptr{Vec}),(comm,n,N,nghost,ghosts,array,vv),"/Vec/VecCreateGhostWithArray.html")
+@wrapper(:VecCreateMPI,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Vec),(comm,n,N,v),"/Vec/VecCreateMPI.html")
+@wrapper(:VecDestroy,PetscErrorCode,(Ptr{Vec},),(vec,),"/Vec/VecDestroy.html")
+@wrapper(:VecView,PetscErrorCode,(Vec,PetscViewer),(vec,viewer),"/Vec/VecView.html")
+@wrapper(:VecSetValues,PetscErrorCode,(Vec,PetscInt,Ptr{PetscInt},Ptr{PetscScalar},InsertMode),(x,ni,ix,y,iora),"/Vec/VecSetValues.html")
+@wrapper(:VecGetValues,PetscErrorCode,(Vec,PetscInt,Ptr{PetscInt},Ptr{PetscScalar}),(x,ni,ix,y),"/Vec/VecGetValues.html")
+@wrapper(:VecGetArray,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"/Vec/VecGetArray.html")
+@wrapper(:VecGetArrayRead,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"/Vec/VecGetArrayRead.html")
+@wrapper(:VecGetArrayWrite,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"/Vec/VecGetArrayWrite.html")
+@wrapper(:VecRestoreArray,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"/Vec/VecRestoreArray.html")
+@wrapper(:VecRestoreArrayRead,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"/Vec/VecRestoreArrayRead.html")
+@wrapper(:VecRestoreArrayWrite,PetscErrorCode,(Vec,Ptr{Ptr{PetscScalar}}),(x,a),"/Vec/VecRestoreArrayWrite.html")
+@wrapper(:VecGetSize,PetscErrorCode,(Vec,Ptr{PetscInt}),(vec,n),"/Vec/VecGetSize.html")
+@wrapper(:VecGetLocalSize,PetscErrorCode,(Vec,Ptr{PetscInt}),(vec,n),"/Vec/VecGetLocalSize.html")
+@wrapper(:VecAssemblyBegin,PetscErrorCode,(Vec,),(vec,),"/Vec/VecAssemblyBegin.html")
+@wrapper(:VecAssemblyEnd,PetscErrorCode,(Vec,),(vec,),"/Vec/VecAssemblyEnd.html")
+@wrapper(:VecPlaceArray,PetscErrorCode,(Vec,Ptr{PetscScalar}),(vec,array),"/Vec/VecPlaceArray.html")
+@wrapper(:VecResetArray,PetscErrorCode,(Vec,),(vec,),"/Vec/VecResetArray.html")
+@wrapper(:VecScale,PetscErrorCode,(Vec,PetscScalar),(x,alpha),"/Vec/VecScale.html")
+@wrapper(:VecSet,PetscErrorCode,(Vec,PetscScalar),(x,alpha),"/Vec/VecSet.html")
+@wrapper(:VecDuplicate,PetscErrorCode,(Vec,Ptr{Vec}),(v,newv),"/Vec/VecDuplicate.html")
+@wrapper(:VecCopy,PetscErrorCode,(Vec,Vec),(x,y),"/Vec/VecCopy.html")
+@wrapper(:VecAXPY,PetscErrorCode,(Vec,PetscScalar,Vec),(y,alpha,x),"/Vec/VecAXPY.html")
+@wrapper(:VecAYPX,PetscErrorCode,(Vec,PetscScalar,Vec),(y,beta,x),"/Vec/VecAYPX.html")
+@wrapper(:VecAXPBY,PetscErrorCode,(Vec,PetscScalar,PetscScalar,Vec),(y,alpha,beta,x),"/Vec/VecAXPBY.html")
+@wrapper(:VecSetOption,PetscErrorCode,(Vec,VecOption,PetscBool),(x,op,flg),"/Vec/VecSetOption.html")
+@wrapper(:VecNorm,PetscErrorCode,(Vec,NormType,Ptr{PetscReal}),(x,typ,val),"/Vec/VecNorm.html")
+@wrapper(:VecGhostGetLocalForm,PetscErrorCode,(Vec,Ptr{Vec}),(g,l),"/Vec/VecGhostGetLocalForm.html")
+@wrapper(:VecGhostRestoreLocalForm,PetscErrorCode,(Vec,Ptr{Vec}),(g,l),"/Vec/VecGhostRestoreLocalForm.html")
+@wrapper(:VecZeroEntries,PetscErrorCode,(Vec,),(v,),"/Vec/VecZeroEntries.html")
 
 # Matrix related functions
 
@@ -511,35 +511,92 @@ Mat() = Mat(Ptr{Cvoid}())
 Base.convert(::Type{Mat},p::Ptr{Cvoid}) = Mat(p)
 Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Mat) = v.ptr
 
-@wrapper(:MatCreate,PetscErrorCode,(MPI.Comm,Ptr{Mat}),(comm,mat),"$docs_url/Mat/MatCreate.html")
-@wrapper(:MatCreateAIJ,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{Mat}),(comm,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,mat),"$docs_url/Mat/MatCreateAIJ.html")
-@wrapper(:MatCreateSeqAIJ,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{Mat}),(comm,m,n,nz,nnz,mat),"$docs_url/Mat/MatCreateSeqAIJ.html")
-@wrapper(:MatCreateSeqAIJWithArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,i,j,a,mat),"$docs_url/Mat/MatCreateSeqAIJWithArrays.html")
-@wrapper(:MatCreateMPIAIJWithArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,M,N,i,j,a,mat),"$docs_url/Mat/MatCreateMPIAIJWithArrays.html")
-@wrapper(:MatCreateMPIAIJWithSplitArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,M,N,i,j,a,oi,oj,oa,mat),"$docs_url/Mat/MatCreateMPIAIJWithSplitArrays.html")
-@wrapper(:MatDestroy,PetscErrorCode,(Ptr{Mat},),(A,),"$docs_url/Mat/MatDestroy.html")
-@wrapper(:MatView,PetscErrorCode,(Mat,PetscViewer),(mat,viewer),"$docs_url/Mat/MatView.html")
-@wrapper(:MatSetType,PetscErrorCode,(Mat,MatType),(mat,matype),"$docs_url/Mat/MatSetType.html")
-@wrapper(:MatSetSizes,PetscErrorCode,(Mat,PetscInt,PetscInt,PetscInt,PetscInt),(A,m,n,M,N),"$docs_url/Mat/MatSetSizes.html")
-@wrapper(:MatSetPreallocationCOO,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},Ptr{PetscInt}),(A,ncoo,coo_i,coo_j),"$docs_url/Mat/MatSetPreallocationCOO.html")
-@wrapper(:MatSetValuesCOO,PetscErrorCode,(Mat,Ptr{PetscScalar},InsertMode),(A,coo_v,imode),"$docs_url/Mat/MatSetValuesCOO.html")
-@wrapper(:MatSetValues,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{PetscScalar},InsertMode),(mat,m,idxm,n,idxn,v,addv),"$docs_url/Mat/MatSetValues.html")
-@wrapper(:MatGetValues,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{PetscScalar}),(mat,m,idxm,n,idxn,v),"$docs_url/Mat/MatGetValues.html")
-@wrapper(:MatAssemblyBegin,PetscErrorCode,(Mat,MatAssemblyType),(mat,typ),"$docs_url/Mat/MatAssemblyBegin.html")
-@wrapper(:MatAssemblyEnd,PetscErrorCode,(Mat,MatAssemblyType),(mat,typ),"$docs_url/Mat/MatAssemblyEnd.html")
-@wrapper(:MatGetSize,PetscErrorCode,(Mat,Ptr{PetscInt},Ptr{PetscInt}),(mat,m,n),"$docs_url/Mat/MatGetSize.html")
-@wrapper(:MatEqual,PetscErrorCode,(Mat,Mat,Ptr{PetscBool}),(A,B,flg),"$docs_url/Mat/MatEqual.html")
-@wrapper(:MatMultAdd,PetscErrorCode,(Mat,Vec,Vec,Vec),(mat,v1,v2,v3),"$docs_url/Mat/MatMultAdd.html")
-@wrapper(:MatMult,PetscErrorCode,(Mat,Vec,Vec),(mat,x,y),"$docs_url/Mat/MatMult.html")
-@wrapper(:MatScale,PetscErrorCode,(Mat,PetscScalar),(mat,alpha),"$docs_url/Mat/MatScale.html")
-@wrapper(:MatConvert,PetscErrorCode,(Mat,MatType,MatReuse,Ptr{Mat}),(mat,newtype,reuse,M),"$docs_url/Mat/MatConvert.html")
-@wrapper(:MatGetInfo,PetscErrorCode,(Mat,MatInfoType,Ptr{MatInfo}),(mat,flag,info),"$docs_url/Mat/MatGetInfo.html")
-@wrapper(:MatZeroEntries,PetscErrorCode,(Mat,),(mat,),"$docs_url/Mat/MatZeroEntries.html")
-@wrapper(:MatCopy,PetscErrorCode,(Mat,Mat,MatStructure),(A,B,str),"$docs_url/Mat/MatCopy.html")
-@wrapper(:MatSetBlockSize,PetscErrorCode,(Mat,PetscInt),(mat,bs),"$docs_url/Mat/MatSetBlockSize.html")
-@wrapper(:MatMumpsSetIcntl,PetscErrorCode,(Mat,PetscInt,PetscInt),(mat,icntl,val),"$docs_url/Mat/MatMumpsSetIcntl.html")
-@wrapper(:MatMumpsSetCntl,PetscErrorCode,(Mat,PetscInt,PetscReal),(mat,icntl,val),"$docs_url/Mat/MatMumpsSetCntl.html")
-@wrapper(:MatMPIAIJSetPreallocation,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt}),(B,d_nz,d_nnz,o_nz,o_nnz),"$docs_url/Mat/MatMPIAIJSetPreallocation.html")
+@wrapper(:MatCreate,PetscErrorCode,(MPI.Comm,Ptr{Mat}),(comm,mat),"/Mat/MatCreate.html")
+@wrapper(:MatCreateAIJ,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{Mat}),(comm,m,n,M,N,d_nz,d_nnz,o_nz,o_nnz,mat),"/Mat/MatCreateAIJ.html")
+@wrapper(:MatCreateSeqAIJ,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{Mat}),(comm,m,n,nz,nnz,mat),"/Mat/MatCreateSeqAIJ.html")
+@wrapper(:MatCreateSeqAIJWithArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,i,j,a,mat),"/Mat/MatCreateSeqAIJWithArrays.html")
+@wrapper(:MatCreateMPIAIJWithArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,M,N,i,j,a,mat),"/Mat/MatCreateMPIAIJWithArrays.html")
+@wrapper(:MatCreateMPIAIJWithSplitArrays,PetscErrorCode,(MPI.Comm,PetscInt,PetscInt,PetscInt,PetscInt,Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{PetscInt},Ptr{PetscInt},Ptr{PetscScalar},Ptr{Mat}),(comm,m,n,M,N,i,j,a,oi,oj,oa,mat),"/Mat/MatCreateMPIAIJWithSplitArrays.html")
+@wrapper(:MatDestroy,PetscErrorCode,(Ptr{Mat},),(A,),"/Mat/MatDestroy.html")
+@wrapper(:MatView,PetscErrorCode,(Mat,PetscViewer),(mat,viewer),"/Mat/MatView.html")
+@wrapper(:MatSetType,PetscErrorCode,(Mat,MatType),(mat,matype),"/Mat/MatSetType.html")
+@wrapper(:MatSetSizes,PetscErrorCode,(Mat,PetscInt,PetscInt,PetscInt,PetscInt),(A,m,n,M,N),"/Mat/MatSetSizes.html")
+@wrapper(:MatSetPreallocationCOO,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},Ptr{PetscInt}),(A,ncoo,coo_i,coo_j),"/Mat/MatSetPreallocationCOO.html")
+@wrapper(:MatSetValuesCOO,PetscErrorCode,(Mat,Ptr{PetscScalar},InsertMode),(A,coo_v,imode),"/Mat/MatSetValuesCOO.html")
+@wrapper(:MatSetValues,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{PetscScalar},InsertMode),(mat,m,idxm,n,idxn,v,addv),"/Mat/MatSetValues.html")
+@wrapper(:MatGetValues,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt},Ptr{PetscScalar}),(mat,m,idxm,n,idxn,v),"/Mat/MatGetValues.html")
+@wrapper(:MatAssemblyBegin,PetscErrorCode,(Mat,MatAssemblyType),(mat,typ),"/Mat/MatAssemblyBegin.html")
+@wrapper(:MatAssemblyEnd,PetscErrorCode,(Mat,MatAssemblyType),(mat,typ),"/Mat/MatAssemblyEnd.html")
+@wrapper(:MatGetSize,PetscErrorCode,(Mat,Ptr{PetscInt},Ptr{PetscInt}),(mat,m,n),"/Mat/MatGetSize.html")
+@wrapper(:MatEqual,PetscErrorCode,(Mat,Mat,Ptr{PetscBool}),(A,B,flg),"/Mat/MatEqual.html")
+@wrapper(:MatMultAdd,PetscErrorCode,(Mat,Vec,Vec,Vec),(mat,v1,v2,v3),"/Mat/MatMultAdd.html")
+@wrapper(:MatMult,PetscErrorCode,(Mat,Vec,Vec),(mat,x,y),"/Mat/MatMult.html")
+@wrapper(:MatScale,PetscErrorCode,(Mat,PetscScalar),(mat,alpha),"/Mat/MatScale.html")
+@wrapper(:MatConvert,PetscErrorCode,(Mat,MatType,MatReuse,Ptr{Mat}),(mat,newtype,reuse,M),"/Mat/MatConvert.html")
+@wrapper(:MatGetInfo,PetscErrorCode,(Mat,MatInfoType,Ptr{MatInfo}),(mat,flag,info),"/Mat/MatGetInfo.html")
+@wrapper(:MatZeroEntries,PetscErrorCode,(Mat,),(mat,),"/Mat/MatZeroEntries.html")
+@wrapper(:MatCopy,PetscErrorCode,(Mat,Mat,MatStructure),(A,B,str),"/Mat/MatCopy.html")
+@wrapper(:MatSetBlockSize,PetscErrorCode,(Mat,PetscInt),(mat,bs),"/Mat/MatSetBlockSize.html")
+@wrapper(:MatMumpsSetIcntl,PetscErrorCode,(Mat,PetscInt,PetscInt),(mat,icntl,val),"/Mat/MatMumpsSetIcntl.html")
+@wrapper(:MatMumpsSetCntl,PetscErrorCode,(Mat,PetscInt,PetscReal),(mat,icntl,val),"/Mat/MatMumpsSetCntl.html")
+@wrapper(:MatMPIAIJSetPreallocation,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt}),(B,d_nz,d_nnz,o_nz,o_nnz),"/Mat/MatMPIAIJSetPreallocation.html")
+
+# Matrix products related
+
+"""
+Julia alias for the `MatProductType` C enum.
+
+See [PETSc manual]($docs_url/Mat/MatProductType.html).
+"""
+@enum MatProductType begin
+  MATPRODUCT_UNSPECIFIED = 0
+  MATPRODUCT_AB
+  MATPRODUCT_AtB
+  MATPRODUCT_ABt
+  MATPRODUCT_PtAP
+  MATPRODUCT_RARt
+  MATPRODUCT_ABC
+end
+
+"""
+Julia alias for `MatProductAlgorithm` C type.
+
+See [PETSc manual]($docs_url/Mat/MatProductAlgorithm.html).
+"""
+const MatProductAlgorithm = Cstring
+const MATPRODUCTALGORITHMDEFAULT         = "default"
+const MATPRODUCTALGORITHMSORTED          = "sorted"
+const MATPRODUCTALGORITHMSCALABLE        = "scalable"
+const MATPRODUCTALGORITHMSCALABLEFAST    = "scalable_fast"
+const MATPRODUCTALGORITHMHEAP            = "heap"
+const MATPRODUCTALGORITHMBHEAP           = "btheap"
+const MATPRODUCTALGORITHMLLCONDENSED     = "llcondensed"
+const MATPRODUCTALGORITHMROWMERGE        = "rowmerge"
+const MATPRODUCTALGORITHMOUTERPRODUCT    = "outerproduct"
+const MATPRODUCTALGORITHMATB             = "at*b"
+const MATPRODUCTALGORITHMRAP             = "rap"
+const MATPRODUCTALGORITHMNONSCALABLE     = "nonscalable"
+const MATPRODUCTALGORITHMSEQMPI          = "seqmpi"
+const MATPRODUCTALGORITHMBACKEND         = "backend"
+const MATPRODUCTALGORITHMOVERLAPPING     = "overlapping"
+const MATPRODUCTALGORITHMMERGED          = "merged"
+const MATPRODUCTALGORITHMALLATONCE       = "allatonce"
+const MATPRODUCTALGORITHMALLATONCEMERGED = "allatonce_merged"
+const MATPRODUCTALGORITHMALLGATHERV      = "allgatherv"
+const MATPRODUCTALGORITHMCYCLIC          = "cyclic"
+const MATPRODUCTALGORITHMHYPRE           = "hypre"
+
+@wrapper(:MatMatMult,PetscErrorCode,(Mat,Mat,MatReuse,PetscReal,Ptr{Mat}),(A,B,scall,fill,C),"/Mat/MatMatMult.html")
+@wrapper(:MatProductCreate,PetscErrorCode,(Mat,Mat,Mat,Ptr{Mat}),(A,B,C,D),"/Mat/MatProductCreate.html")
+@wrapper(:MatProductSetType,PetscErrorCode,(Mat,MatProductType),(mat,productype),"/Mat/MatProductSetType.html")
+@wrapper(:MatProductSymbolic,PetscErrorCode,(Mat,),(mat,),"/Mat/MatProductSymbolic.html")
+@wrapper(:MatProductNumeric,PetscErrorCode,(Mat,),(mat,),"/Mat/MatProductNumeric.html")
+@wrapper(:MatProductReplaceMats,PetscErrorCode,(Mat,Mat,Mat,Mat),(A,B,C,D),"/Mat/MatProductReplaceMats.html")
+@wrapper(:MatProductSetAlgorithm,PetscErrorCode,(Mat,MatProductAlgorithm),(mat,alg),"/Mat/MatProductSetAlgorithm.html")
+@wrapper(:MatProductGetAlgorithm,PetscErrorCode,(Mat,Ptr{MatProductAlgorithm}),(mat,alg),"/Mat/MatProductGetAlgorithm.html")
+@wrapper(:MatProductSetFill,PetscErrorCode,(Mat,PetscReal),(mat,fill),"/Mat/MatProductSetFill.html")
+@wrapper(:MatProductSetFromOptions,PetscErrorCode,(Mat,),(mat,),"/Mat/MatProductSetFromOptions.html")
+@wrapper(:MatProductClear,PetscErrorCode,(Mat,),(mat,),"/Mat/MatProductClear.html")
 
 # Null space related
 
@@ -555,10 +612,10 @@ MatNullSpace() = MatNullSpace(Ptr{Cvoid}())
 Base.convert(::Type{MatNullSpace},p::Ptr{Cvoid}) = MatNullSpace(p)
 Base.unsafe_convert(::Type{Ptr{Cvoid}},v::MatNullSpace) = v.ptr
 
-@wrapper(:MatSetNearNullSpace,PetscErrorCode,(Mat,MatNullSpace),(mat,nullsp),"$docs_url/Mat/MatSetNearNullSpace.html")
-@wrapper(:MatNullSpaceCreateRigidBody,PetscErrorCode,(Vec,Ptr{MatNullSpace}),(coords,sp),"$docs_url/Mat/MatNullSpaceCreateRigidBody.html")
-@wrapper(:MatNullSpaceCreate,PetscErrorCode,(MPI.Comm,PetscBool,PetscInt,Ptr{Vec},Ptr{MatNullSpace}),(comm,has_cnst,n,vecs,sp),"$docs_url/Mat/MatNullSpaceCreate.html")
-@wrapper(:MatNullSpaceDestroy,PetscErrorCode,(Ptr{MatNullSpace},),(ns,),"$docs_url/Mat/MatNullSpaceDestroy.html")
+@wrapper(:MatSetNearNullSpace,PetscErrorCode,(Mat,MatNullSpace),(mat,nullsp),"/Mat/MatSetNearNullSpace.html")
+@wrapper(:MatNullSpaceCreateRigidBody,PetscErrorCode,(Vec,Ptr{MatNullSpace}),(coords,sp),"/Mat/MatNullSpaceCreateRigidBody.html")
+@wrapper(:MatNullSpaceCreate,PetscErrorCode,(MPI.Comm,PetscBool,PetscInt,Ptr{Vec},Ptr{MatNullSpace}),(comm,has_cnst,n,vecs,sp),"/Mat/MatNullSpaceCreate.html")
+@wrapper(:MatNullSpaceDestroy,PetscErrorCode,(Ptr{MatNullSpace},),(ns,),"/Mat/MatNullSpaceDestroy.html")
 
 # KSP and PC related things
 
@@ -695,25 +752,25 @@ PC() = PC(Ptr{Cvoid}())
 Base.convert(::Type{PC},p::Ptr{Cvoid}) = PC(p)
 Base.unsafe_convert(::Type{Ptr{Cvoid}},v::PC) = v.ptr
 
-@wrapper(:KSPCreate,PetscErrorCode,(MPI.Comm,Ptr{KSP}),(comm,inksp),"$docs_url/KSP/KSPCreate.html")
-@wrapper(:KSPDestroy,PetscErrorCode,(Ptr{KSP},),(ksp,),"$docs_url/KSP/KSPDestroy.html")
-@wrapper(:KSPSetFromOptions,PetscErrorCode,(KSP,),(ksp,),"$docs_url/KSP/KSPSetFromOptions.html")
-@wrapper(:KSPSetOptionsPrefix,PetscErrorCode,(KSP,Cstring),(ksp,prefix),"$docs_url/KSP/KSPSetOptionsPrefix.html")
-@wrapper(:KSPSetUp,PetscErrorCode,(KSP,),(ksp,),"$docs_url/KSP/KSPSetUp.html")
-@wrapper(:KSPSetOperators,PetscErrorCode,(KSP,Mat,Mat),(ksp,Amat,Pmat),"$docs_url/KSP/KSPSetOperators.html")
-@wrapper(:KSPSetTolerances,PetscErrorCode,(KSP,PetscReal,PetscReal,PetscReal,PetscInt),(ksp,rtol,abstol,dtol,maxits),"$docs_url/KSP/KSPSetTolerances.html")
-@wrapper(:KSPSolve,PetscErrorCode,(KSP,Vec,Vec),(ksp,b,x),"$docs_url/KSP/KSPSolve.html")
-@wrapper(:KSPSolveTranspose,PetscErrorCode,(KSP,Vec,Vec),(ksp,b,x),"$docs_url/KSP/KSPSolveTranspose.html")
-@wrapper(:KSPGetIterationNumber,PetscErrorCode,(KSP,Ptr{PetscInt}),(ksp,its),"$docs_url/KSP/KSPGetIterationNumber.html")
-@wrapper(:KSPView,PetscErrorCode,(KSP,PetscViewer),(ksp,viewer),"$docs_url/KSP/KSPView.html")
-@wrapper(:KSPSetInitialGuessNonzero,PetscErrorCode,(KSP,PetscBool),(ksp,flg),"$docs_url/KSP/KSPSetInitialGuessNonzero.html")
-@wrapper(:KSPSetType,PetscErrorCode,(KSP,KSPType),(ksp,typ),"$docs_url/KSP/KSPSetType.html")
-@wrapper(:KSPGetPC,PetscErrorCode,(KSP,Ptr{PC}),(ksp,pc),"$docs_url/KSP/KSPGetPC.html")
-@wrapper(:PCSetType,PetscErrorCode,(PC,PCType),(pc,typ),"$docs_url/PC/PCSetType.html")
-@wrapper(:PCView,PetscErrorCode,(PC,PetscViewer),(pc,viewer),"$docs_url/PC/PCView.html")
-@wrapper(:PCFactorSetMatSolverType,PetscErrorCode,(PC,PCType),(pc,typ),"$docs_url/PC/PCFactorSetMatSolverType.html")
-@wrapper(:PCFactorSetUpMatSolverType,PetscErrorCode,(PC,),(pc,),"$docs_url/PC/PCFactorSetUpMatSolverType.html")
-@wrapper(:PCFactorGetMatrix,PetscErrorCode,(PC,Ptr{Mat}),(ksp,mat),"$docs_url/PC/PCFactorGetMatrix.html")
+@wrapper(:KSPCreate,PetscErrorCode,(MPI.Comm,Ptr{KSP}),(comm,inksp),"/KSP/KSPCreate.html")
+@wrapper(:KSPDestroy,PetscErrorCode,(Ptr{KSP},),(ksp,),"/KSP/KSPDestroy.html")
+@wrapper(:KSPSetFromOptions,PetscErrorCode,(KSP,),(ksp,),"/KSP/KSPSetFromOptions.html")
+@wrapper(:KSPSetOptionsPrefix,PetscErrorCode,(KSP,Cstring),(ksp,prefix),"/KSP/KSPSetOptionsPrefix.html")
+@wrapper(:KSPSetUp,PetscErrorCode,(KSP,),(ksp,),"/KSP/KSPSetUp.html")
+@wrapper(:KSPSetOperators,PetscErrorCode,(KSP,Mat,Mat),(ksp,Amat,Pmat),"/KSP/KSPSetOperators.html")
+@wrapper(:KSPSetTolerances,PetscErrorCode,(KSP,PetscReal,PetscReal,PetscReal,PetscInt),(ksp,rtol,abstol,dtol,maxits),"/KSP/KSPSetTolerances.html")
+@wrapper(:KSPSolve,PetscErrorCode,(KSP,Vec,Vec),(ksp,b,x),"/KSP/KSPSolve.html")
+@wrapper(:KSPSolveTranspose,PetscErrorCode,(KSP,Vec,Vec),(ksp,b,x),"/KSP/KSPSolveTranspose.html")
+@wrapper(:KSPGetIterationNumber,PetscErrorCode,(KSP,Ptr{PetscInt}),(ksp,its),"/KSP/KSPGetIterationNumber.html")
+@wrapper(:KSPView,PetscErrorCode,(KSP,PetscViewer),(ksp,viewer),"/KSP/KSPView.html")
+@wrapper(:KSPSetInitialGuessNonzero,PetscErrorCode,(KSP,PetscBool),(ksp,flg),"/KSP/KSPSetInitialGuessNonzero.html")
+@wrapper(:KSPSetType,PetscErrorCode,(KSP,KSPType),(ksp,typ),"/KSP/KSPSetType.html")
+@wrapper(:KSPGetPC,PetscErrorCode,(KSP,Ptr{PC}),(ksp,pc),"/KSP/KSPGetPC.html")
+@wrapper(:PCSetType,PetscErrorCode,(PC,PCType),(pc,typ),"/PC/PCSetType.html")
+@wrapper(:PCView,PetscErrorCode,(PC,PetscViewer),(pc,viewer),"/PC/PCView.html")
+@wrapper(:PCFactorSetMatSolverType,PetscErrorCode,(PC,PCType),(pc,typ),"/PC/PCFactorSetMatSolverType.html")
+@wrapper(:PCFactorSetUpMatSolverType,PetscErrorCode,(PC,),(pc,),"/PC/PCFactorSetUpMatSolverType.html")
+@wrapper(:PCFactorGetMatrix,PetscErrorCode,(PC,Ptr{Mat}),(ksp,mat),"/PC/PCFactorGetMatrix.html")
 
 
 """
@@ -751,22 +808,22 @@ const SNESCOMPOSITE        = "composite"
 const SNESPATCH            = "patch"
 
 
-@wrapper(:SNESCreate,PetscErrorCode,(MPI.Comm,Ptr{SNES}),(comm,snes),"$docs_url/SNES/SNESCreate.html")
-@wrapper(:SNESSetFunction,PetscErrorCode,(SNES,Vec,Ptr{Cvoid},Ptr{Cvoid}),(snes,vec,fptr,ctx),"$docs_url/SNES/SNESSetFunction.html")
-@wrapper(:SNESSetJacobian,PetscErrorCode,(SNES,Mat,Mat,Ptr{Cvoid},Ptr{Cvoid}),(snes,A,P,jacptr,ctx),"$docs_url/SNES/SNESSetJacobian.html")
-@wrapper(:SNESSolve,PetscErrorCode,(SNES,Vec,Vec),(snes,b,x),"$docs_url/SNES/SNESSolve.html")
-@wrapper(:SNESDestroy,PetscErrorCode,(Ptr{SNES},),(snes,),"$docs_url/SNES/SNESDestroy.html")
-@wrapper(:SNESSetFromOptions,PetscErrorCode,(SNES,),(snes,),"$docs_url/SNES/SNESSetFromOptions.html")
-@wrapper(:SNESView,PetscErrorCode,(SNES,PetscViewer),(snes,viewer),"$docs_url/SNES/SNESView.html")
-@wrapper(:SNESSetType,PetscErrorCode,(SNES,SNESType),(snes,type),"$docs_url/SNES/SNESSetType.html")
-@wrapper(:SNESGetKSP,PetscErrorCode,(SNES,Ptr{KSP}),(snes,ksp),"$docs_url/SNES/SNESGetKSP.html")
-@wrapper(:SNESGetIterationNumber,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,iter),"$docs_url/SNES/SNESGetIterationNumber.html")
-@wrapper(:SNESGetLinearSolveIterations,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,iter),"$docs_url/SNES/SNESGetLinearSolveIterations.html")
-@wrapper(:SNESSetCountersReset,PetscErrorCode,(SNES,PetscBool),(snes,reset),"$docs_url/SNES/SNESSetCountersReset.html")
-@wrapper(:SNESGetNumberFunctionEvals,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,nfuncs),"$docs_url/SNES/SNESGetNumberFunctionEvals.html")
-@wrapper(:SNESGetLinearSolveFailures,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,nfails),"$docs_url/SNES/SNESGetLinearSolveFailures.html")
+@wrapper(:SNESCreate,PetscErrorCode,(MPI.Comm,Ptr{SNES}),(comm,snes),"/SNES/SNESCreate.html")
+@wrapper(:SNESSetFunction,PetscErrorCode,(SNES,Vec,Ptr{Cvoid},Ptr{Cvoid}),(snes,vec,fptr,ctx),"/SNES/SNESSetFunction.html")
+@wrapper(:SNESSetJacobian,PetscErrorCode,(SNES,Mat,Mat,Ptr{Cvoid},Ptr{Cvoid}),(snes,A,P,jacptr,ctx),"/SNES/SNESSetJacobian.html")
+@wrapper(:SNESSolve,PetscErrorCode,(SNES,Vec,Vec),(snes,b,x),"/SNES/SNESSolve.html")
+@wrapper(:SNESDestroy,PetscErrorCode,(Ptr{SNES},),(snes,),"/SNES/SNESDestroy.html")
+@wrapper(:SNESSetFromOptions,PetscErrorCode,(SNES,),(snes,),"/SNES/SNESSetFromOptions.html")
+@wrapper(:SNESView,PetscErrorCode,(SNES,PetscViewer),(snes,viewer),"/SNES/SNESView.html")
+@wrapper(:SNESSetType,PetscErrorCode,(SNES,SNESType),(snes,type),"/SNES/SNESSetType.html")
+@wrapper(:SNESGetKSP,PetscErrorCode,(SNES,Ptr{KSP}),(snes,ksp),"/SNES/SNESGetKSP.html")
+@wrapper(:SNESGetIterationNumber,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,iter),"/SNES/SNESGetIterationNumber.html")
+@wrapper(:SNESGetLinearSolveIterations,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,iter),"/SNES/SNESGetLinearSolveIterations.html")
+@wrapper(:SNESSetCountersReset,PetscErrorCode,(SNES,PetscBool),(snes,reset),"/SNES/SNESSetCountersReset.html")
+@wrapper(:SNESGetNumberFunctionEvals,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,nfuncs),"/SNES/SNESGetNumberFunctionEvals.html")
+@wrapper(:SNESGetLinearSolveFailures,PetscErrorCode,(SNES,Ptr{PetscInt}),(snes,nfails),"/SNES/SNESGetLinearSolveFailures.html")
 
 # Garbage collection of PETSc objects
-@wrapper(:PetscObjectRegisterDestroy,PetscErrorCode,(Ptr{Cvoid},),(obj,),"$docs_url/Sys/PetscObjectRegisterDestroy.html")
-@wrapper(:PetscObjectRegisterDestroyAll,PetscErrorCode,(),(),"$docs_url/Sys/PetscObjectRegisterDestroyAll.html")
+@wrapper(:PetscObjectRegisterDestroy,PetscErrorCode,(Ptr{Cvoid},),(obj,),"/Sys/PetscObjectRegisterDestroy.html")
+@wrapper(:PetscObjectRegisterDestroyAll,PetscErrorCode,(),(),"/Sys/PetscObjectRegisterDestroyAll.html")
 
