@@ -1,3 +1,5 @@
+module KspTests
+
 using MPI
 using Test
 
@@ -19,6 +21,5 @@ end
 
 run(`$mpiexec_cmd -np 3 $(Base.julia_cmd()) --project=$repodir -e $code`)
 
-nothing
-
+end # module
 
