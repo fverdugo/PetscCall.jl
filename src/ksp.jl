@@ -263,6 +263,20 @@ function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix,petsc_comm,cols=re
         oj .-= u
         m = own_length(rows)
         n = own_length(cols)
+        for i in 1:(length(oi)-1)
+            pini = oi[i]+1
+            pend = oi[i+1]
+            issorted = true
+            for p in pini:(pend-1)
+               if oj[p+1] < oj[p]
+                   issorted = false
+                   break
+               end
+            end
+            if ! issorted
+                sort!(view(oj,pini:pend))
+            end
+        end
         (petsc_comm,m,n,M,N,i,j,v,oi,oj,ov)
     end
     args = map(setup,partition(a),rows,cols)
