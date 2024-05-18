@@ -274,7 +274,12 @@ function MatCreateMPIAIJWithSplitArrays_args(a::PSparseMatrix,petsc_comm,cols=re
                end
             end
             if ! issorted
-                sort!(view(oj,pini:pend))
+                # TODO a more efficient way of doing this, or avoiding the need to sort
+                viewj = view(oj,pini:pend)
+                viewv = view(ov,pini:pend)
+                perm = sortperm(viewj) # Allocation here
+                viewj .= viewj[perm]
+                viewv .= viewv[perm]
             end
         end
         (petsc_comm,m,n,M,N,i,j,v,oi,oj,ov)
