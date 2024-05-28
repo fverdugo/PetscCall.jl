@@ -12,6 +12,8 @@ include(defs)
 params = (;nodes_per_dir=(10,10,10),parts_per_dir=(1,1,1))
 with_mpi(dist->Defs.main(dist,params))
 
+xxx
+
 code = quote
     using MPI; MPI.Init()
     using PartitionedArrays

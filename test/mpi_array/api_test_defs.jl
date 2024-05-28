@@ -4,6 +4,7 @@ using PartitionedArrays
 using PetscCall
 using LinearAlgebra
 using Test
+using SparseArrays
 
 function spmv_petsc!(b,A,x)
     # Convert the input to petsc objects
@@ -57,6 +58,42 @@ function test_spmm_petsc(A,B)
     GC.@preserve ownership PetscCall.@check_error_code PetscCall.MatDestroy(mat_C)
 end
 
+function petsc_coo(petsc_comm,I,J,V,rows,cols)
+    m = own_length(rows)
+    n = own_length(cols)
+    M = PetscCall.PETSC_DECIDE
+    N = PetscCall.PETSC_DECIDE
+    I .= I .- 1
+    J .= J .- 1
+    ownership = (I,J,V)
+    ncoo = length(I)
+    A = Ref{PetscCall.Mat}()
+    PetscCall.@check_error_code PetscCall.MatCreate(petsc_comm,A)
+    PetscCall.@check_error_code PetscCall.MatSetType(A[],PetscCall.MATMPIAIJ)
+    PetscCall.@check_error_code PetscCall.MatSetSizes(A[],m,n,M,N)
+    PetscCall.@check_error_code PetscCall.MatSetFromOptions(A[])
+    PetscCall.@check_error_code PetscCall.MatSetPreallocationCOO(A[],ncoo,I,J)
+    PetscCall.@check_error_code PetscCall.MatSetValuesCOO(A[],V,PetscCall.ADD_VALUES)
+    #PetscCall.@check_error_code PetscCall.MatAssemblyBegin(A[],PetscCall.MAT_FINAL_ASSEMBLY)
+    #PetscCall.@check_error_code PetscCall.MatAssemblyEnd(A[],PetscCall.MAT_FINAL_ASSEMBLY)
+    GC.@preserve ownership PetscCall.@check_error_code PetscCall.MatDestroy(A)
+end
+
+function generate_coo(args...)
+    A = PartitionedArrays.laplace_matrix(args...)
+    row_partition = partition(axes(A,1))
+    col_partition = partition(axes(A,2))
+    (I,J,V) = map(partition(A),row_partition,col_partition) do myA,rows,cols
+        Id,Jd,Vd = findnz(myA.blocks.own_own)
+        Io,Jo,Vo = findnz(myA.blocks.own_ghost)
+        myI = vcat(map_own_to_global!(Id,rows),map_ghost_to_global!(Io,rows))
+        myJ = vcat(map_own_to_global!(Jd,cols),map_ghost_to_global!(Jo,cols))
+        myV = vcat(Vd,Vo)
+        (myI,myJ,myV)
+    end |> tuple_of_arrays
+    I,J,V,row_partition,col_partition
+end
+
 function main(distribute,params)
     nodes_per_dir = params.nodes_per_dir
     parts_per_dir = params.parts_per_dir
@@ -80,6 +117,11 @@ function main(distribute,params)
     @test norm(c)/norm(b1) < tol
     B = 2*A
     test_spmm_petsc(A,B)
+    I,J,V,row_partition,col_partition = generate_coo(nodes_per_dir,parts_per_dir,ranks)
+    petsc_comm = PetscCall.setup_petsc_comm(ranks)
+    map(I,J,V,row_partition,col_partition) do args...
+        petsc_coo(petsc_comm,args...)
+    end
 end
 
 end #module
