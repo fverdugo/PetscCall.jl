@@ -540,6 +540,7 @@ Base.unsafe_convert(::Type{Ptr{Cvoid}},v::Mat) = v.ptr
 @wrapper(:MatMumpsSetIcntl,PetscErrorCode,(Mat,PetscInt,PetscInt),(mat,icntl,val),"/Mat/MatMumpsSetIcntl.html")
 @wrapper(:MatMumpsSetCntl,PetscErrorCode,(Mat,PetscInt,PetscReal),(mat,icntl,val),"/Mat/MatMumpsSetCntl.html")
 @wrapper(:MatMPIAIJSetPreallocation,PetscErrorCode,(Mat,PetscInt,Ptr{PetscInt},PetscInt,Ptr{PetscInt}),(B,d_nz,d_nnz,o_nz,o_nnz),"/Mat/MatMPIAIJSetPreallocation.html")
+@wrapper(:MatSetFromOptions,PetscErrorCode,(Mat,),(mat,),"/Mat/MatSetFromOptions.html")
 
 # Matrix products related
 

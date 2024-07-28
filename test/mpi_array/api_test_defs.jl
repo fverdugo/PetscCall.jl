@@ -4,6 +4,7 @@ using PartitionedArrays
 using PetscCall
 using LinearAlgebra
 using Test
+using SparseArrays
 
 function spmv_petsc!(b,A,x)
     # Convert the input to petsc objects
@@ -57,6 +58,29 @@ function test_spmm_petsc(A,B)
     GC.@preserve ownership PetscCall.@check_error_code PetscCall.MatDestroy(mat_C)
 end
 
+function petsc_coo(petsc_comm,I,J,V,rows,cols)
+    m = own_length(rows)
+    n = own_length(cols)
+    M = global_length(rows)
+    N = global_length(cols)
+    I .= I .- 1
+    J .= J .- 1
+    ownership = (I,J,V)
+    ncoo = length(I)
+    A = Ref{PetscCall.Mat}()
+    PetscCall.@check_error_code PetscCall.MatCreate(petsc_comm,A)
+    PetscCall.@check_error_code PetscCall.MatSetType(A[],PetscCall.MATMPIAIJ)
+    PetscCall.@check_error_code PetscCall.MatSetSizes(A[],m,n,M,N)
+    PetscCall.@check_error_code PetscCall.MatSetFromOptions(A[])
+    GC.@preserve ownership begin
+        PetscCall.@check_error_code PetscCall.MatSetPreallocationCOO(A[],ncoo,I,J)
+        PetscCall.@check_error_code PetscCall.MatSetValuesCOO(A[],V,PetscCall.ADD_VALUES)
+        PetscCall.@check_error_code PetscCall.MatAssemblyBegin(A[],PetscCall.MAT_FINAL_ASSEMBLY)
+        PetscCall.@check_error_code PetscCall.MatAssemblyEnd(A[],PetscCall.MAT_FINAL_ASSEMBLY)
+        PetscCall.@check_error_code PetscCall.MatDestroy(A)
+    end
+end
+
 function main(distribute,params)
     nodes_per_dir = params.nodes_per_dir
     parts_per_dir = params.parts_per_dir
@@ -80,6 +104,13 @@ function main(distribute,params)
     @test norm(c)/norm(b1) < tol
     B = 2*A
     test_spmm_petsc(A,B)
+    index_type = PetscCall.PetscInt
+    value_type = PetscCall.PetscScalar
+    I,J,V,row_partition,col_partition = laplacian_fem(nodes_per_dir,parts_per_dir,ranks;index_type,value_type)
+    petsc_comm = PetscCall.setup_petsc_comm(ranks)
+    map(I,J,V,row_partition,col_partition) do args...
+        petsc_coo(petsc_comm,args...)
+    end
 end
 
 end #module
