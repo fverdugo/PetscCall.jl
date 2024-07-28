@@ -81,23 +81,6 @@ function petsc_coo(petsc_comm,I,J,V,rows,cols)
     end
 end
 
-function generate_coo(args...)
-    A = PartitionedArrays.laplace_matrix(args...)
-    row_partition = partition(axes(A,1))
-    col_partition = partition(axes(A,2))
-    (I,J,V) = map(partition(A),row_partition,col_partition) do myA,rows,cols
-        Id,Jd,Vd = findnz(myA.blocks.own_own)
-        Io,Jo,Vo = findnz(myA.blocks.own_ghost)
-        myI = vcat(map_own_to_global!(Id,rows),map_own_to_global!(Io,rows))
-        myJ = vcat(map_own_to_global!(Jd,cols),map_ghost_to_global!(Jo,cols))
-        myV = vcat(Vd,Vo)
-        Ti = PetscCall.PetscInt
-        Tv = PetscCall.PetscScalar
-        (convert(Vector{Ti},myI),convert(Vector{Ti},myJ),convert(Vector{Tv},myV))
-    end |> tuple_of_arrays
-    I,J,V,row_partition,col_partition
-end
-
 function main(distribute,params)
     nodes_per_dir = params.nodes_per_dir
     parts_per_dir = params.parts_per_dir
@@ -121,10 +104,9 @@ function main(distribute,params)
     @test norm(c)/norm(b1) < tol
     B = 2*A
     test_spmm_petsc(A,B)
-    I,J,V,row_partition,col_partition = generate_coo(nodes_per_dir,parts_per_dir,ranks)
-    #index_type = PetscCall.PetscInt
-    #value_type = PetscCall.PetscScalar
-    #I,J,V,row_partition,col_partition = laplacian_fem(nodes_per_dir,parts_per_dir,ranks;index_type,value_type)
+    index_type = PetscCall.PetscInt
+    value_type = PetscCall.PetscScalar
+    I,J,V,row_partition,col_partition = laplacian_fem(nodes_per_dir,parts_per_dir,ranks;index_type,value_type)
     petsc_comm = PetscCall.setup_petsc_comm(ranks)
     map(I,J,V,row_partition,col_partition) do args...
         petsc_coo(petsc_comm,args...)
