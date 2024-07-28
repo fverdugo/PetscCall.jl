@@ -61,8 +61,8 @@ end
 function petsc_coo(petsc_comm,I,J,V,rows,cols)
     m = own_length(rows)
     n = own_length(cols)
-    M = PetscCall.PETSC_DECIDE
-    N = PetscCall.PETSC_DECIDE
+    M = global_length(rows)
+    N = global_length(cols)
     I .= I .- 1
     J .= J .- 1
     ownership = (I,J,V)
@@ -72,11 +72,13 @@ function petsc_coo(petsc_comm,I,J,V,rows,cols)
     PetscCall.@check_error_code PetscCall.MatSetType(A[],PetscCall.MATMPIAIJ)
     PetscCall.@check_error_code PetscCall.MatSetSizes(A[],m,n,M,N)
     PetscCall.@check_error_code PetscCall.MatSetFromOptions(A[])
-    PetscCall.@check_error_code PetscCall.MatSetPreallocationCOO(A[],ncoo,I,J)
-    PetscCall.@check_error_code PetscCall.MatSetValuesCOO(A[],V,PetscCall.ADD_VALUES)
-    #PetscCall.@check_error_code PetscCall.MatAssemblyBegin(A[],PetscCall.MAT_FINAL_ASSEMBLY)
-    #PetscCall.@check_error_code PetscCall.MatAssemblyEnd(A[],PetscCall.MAT_FINAL_ASSEMBLY)
-    GC.@preserve ownership PetscCall.@check_error_code PetscCall.MatDestroy(A)
+    GC.@preserve ownership begin
+        PetscCall.@check_error_code PetscCall.MatSetPreallocationCOO(A[],ncoo,I,J)
+        PetscCall.@check_error_code PetscCall.MatSetValuesCOO(A[],V,PetscCall.ADD_VALUES)
+        PetscCall.@check_error_code PetscCall.MatAssemblyBegin(A[],PetscCall.MAT_FINAL_ASSEMBLY)
+        PetscCall.@check_error_code PetscCall.MatAssemblyEnd(A[],PetscCall.MAT_FINAL_ASSEMBLY)
+        PetscCall.@check_error_code PetscCall.MatDestroy(A)
+    end
 end
 
 function generate_coo(args...)
@@ -86,10 +88,12 @@ function generate_coo(args...)
     (I,J,V) = map(partition(A),row_partition,col_partition) do myA,rows,cols
         Id,Jd,Vd = findnz(myA.blocks.own_own)
         Io,Jo,Vo = findnz(myA.blocks.own_ghost)
-        myI = vcat(map_own_to_global!(Id,rows),map_ghost_to_global!(Io,rows))
+        myI = vcat(map_own_to_global!(Id,rows),map_own_to_global!(Io,rows))
         myJ = vcat(map_own_to_global!(Jd,cols),map_ghost_to_global!(Jo,cols))
         myV = vcat(Vd,Vo)
-        (myI,myJ,myV)
+        Ti = PetscCall.PetscInt
+        Tv = PetscCall.PetscScalar
+        (convert(Vector{Ti},myI),convert(Vector{Ti},myJ),convert(Vector{Tv},myV))
     end |> tuple_of_arrays
     I,J,V,row_partition,col_partition
 end
@@ -118,6 +122,9 @@ function main(distribute,params)
     B = 2*A
     test_spmm_petsc(A,B)
     I,J,V,row_partition,col_partition = generate_coo(nodes_per_dir,parts_per_dir,ranks)
+    #index_type = PetscCall.PetscInt
+    #value_type = PetscCall.PetscScalar
+    #I,J,V,row_partition,col_partition = laplacian_fem(nodes_per_dir,parts_per_dir,ranks;index_type,value_type)
     petsc_comm = PetscCall.setup_petsc_comm(ranks)
     map(I,J,V,row_partition,col_partition) do args...
         petsc_coo(petsc_comm,args...)
